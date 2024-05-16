@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -67,6 +68,10 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
         mutableStateOf(Page.MAIN)
     }
 
+    val active = remember{
+        mutableStateOf("главная")
+    }
+
     Box(modifier = Modifier
         .fillMaxSize()
     ){
@@ -98,33 +103,36 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                     .fillMaxWidth()){
 
                 Box(modifier = Modifier
-                    .background(Color.Red)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
                     MenuButton(text = "главная", painterResource(id = R.drawable.home),
+                        active = active.value,
                         action = {
                             page.value = Page.MAIN
+                            active.value = "главная"
                         })
                 }
                 Box(modifier = Modifier
-                    .background(Color.DarkGray)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
                     MenuButton(text = "сканер", painterResource(id = R.drawable.scanner),
+                        active = active.value,
                         action = {
                             page.value = Page.SCANNER
+                            active.value = "сканер"
                         })
                 }
                 Box(modifier = Modifier
-                    .background(Color.Green)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
                     MenuButton(text = "моё", painterResource(id = R.drawable.account),
+                        active = active.value,
                         action = {
                             page.value = Page.ACCOUNT
+                            active.value = "моё"
                         })
                 }
             }
@@ -136,12 +144,18 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
 
 
 @Composable
-fun MenuButton(text: String, painterResourse: Painter, action:()->Unit){
+fun MenuButton(text: String,
+               painterResourse: Painter,
+               action:()->Unit,
+               active:String){
 
     val logoSize = 25.dp
 
     Button(modifier = Modifier.fillMaxSize(),
         shape = RectangleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = if(active == text) Color.Black else Color.Gray),
         onClick = { action() }) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -152,7 +166,6 @@ fun MenuButton(text: String, painterResourse: Painter, action:()->Unit){
                     .height(logoSize)
             )
 
-            //Spacer(modifier = Modifier.height(25.dp))
 
             Text(text = text,
                 fontSize = 15.sp)
