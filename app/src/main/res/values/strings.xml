@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">QRCodeApp</string>
     <string name="title_activity_main_page">MainPageActivity</string>
+    <string name="title_activity_account_page">AccountPage</string>
 </resources>

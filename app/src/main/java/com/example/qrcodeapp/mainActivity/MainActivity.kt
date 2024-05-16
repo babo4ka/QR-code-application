@@ -22,6 +22,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
 import com.example.qrcodeapp.mainActivity.pages.mainPage.MainPage
 import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
 
@@ -52,8 +56,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private enum class Page{
+    MAIN, SCANNER, ACCOUNT
+}
+
 @Composable
 fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
+
+    val page = remember{
+        mutableStateOf(Page.MAIN)
+    }
+
     Box(modifier = Modifier
         .fillMaxSize()
     ){
@@ -62,14 +75,26 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween) {
 
-            MainPage(name = "fe",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f))
+            when(page.value){
+                Page.MAIN -> {
+                    MainPage(name = "fe",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f))
+                }
+                Page.SCANNER -> TODO()
+                Page.ACCOUNT -> {
+                    AccountPage(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                    )
+                }
+            }
 
             Row (horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .height(80.dp)
+                    .height(60.dp)
                     .fillMaxWidth()){
 
                 Box(modifier = Modifier
@@ -77,21 +102,30 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
-                    MenuButton(text = "главная", painterResource(id = R.drawable.home))
+                    MenuButton(text = "главная", painterResource(id = R.drawable.home),
+                        action = {
+                            page.value = Page.MAIN
+                        })
                 }
                 Box(modifier = Modifier
                     .background(Color.DarkGray)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
-                    MenuButton(text = "сканер", painterResource(id = R.drawable.scanner))
+                    MenuButton(text = "сканер", painterResource(id = R.drawable.scanner),
+                        action = {
+                            page.value = Page.SCANNER
+                        })
                 }
                 Box(modifier = Modifier
                     .background(Color.Green)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(1f)){
-                    MenuButton(text = "моё", painterResource(id = R.drawable.account))
+                    MenuButton(text = "моё", painterResource(id = R.drawable.account),
+                        action = {
+                            page.value = Page.ACCOUNT
+                        })
                 }
             }
         }
@@ -102,13 +136,13 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
 
 
 @Composable
-fun MenuButton(text: String, painterResourse: Painter){
+fun MenuButton(text: String, painterResourse: Painter, action:()->Unit){
 
-    val logoSize = 35.dp
+    val logoSize = 25.dp
 
     Button(modifier = Modifier.fillMaxSize(),
         shape = RectangleShape,
-        onClick = { /*TODO*/ }) {
+        onClick = { action() }) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(painter = painterResourse,
@@ -121,7 +155,7 @@ fun MenuButton(text: String, painterResourse: Painter){
             //Spacer(modifier = Modifier.height(25.dp))
 
             Text(text = text,
-                fontSize = 20.sp)
+                fontSize = 15.sp)
         }
 
     }
