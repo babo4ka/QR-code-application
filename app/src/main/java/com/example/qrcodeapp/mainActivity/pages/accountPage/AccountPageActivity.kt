@@ -29,7 +29,7 @@ import com.example.qrcodeapp.R
 
 
 @Composable
-fun AccountPage(modifier: Modifier){
+fun AccountPage(modifier: Modifier) {
 
     val logoSize = 50.dp
     val btnSize = 150.dp
@@ -55,29 +55,39 @@ fun AccountPage(modifier: Modifier){
     )
 
     Box(modifier = modifier) {
-        Row(horizontalArrangement = Arrangement.Center,
+        Row(
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()) {
+            modifier = Modifier.fillMaxSize()
+        ) {
             Button(modifier = Modifier
-                .background(brush = createdBtnGradient,
-                    shape = RoundedCornerShape(25.dp))
+                .background(
+                    brush = createdBtnGradient,
+                    shape = RoundedCornerShape(25.dp)
+                )
                 .height(btnSize)
                 .width(btnSize),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent,
-                    contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Black
+                ),
                 onClick = { /*TODO*/ }) {
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(id = R.drawable.qr_logo),
+                    Icon(
+                        painter = painterResource(id = R.drawable.qr_logo),
                         contentDescription = null,
                         modifier = Modifier
                             .width(logoSize)
-                            .height(logoSize))
+                            .height(logoSize)
+                    )
 
                     Spacer(modifier = Modifier.height(25.dp))
 
-                    Text(text = "Созданные QR",
-                        fontSize = txtSize)
+                    Text(
+                        text = "Созданные QR",
+                        fontSize = txtSize
+                    )
                 }
 
             }
@@ -85,25 +95,33 @@ fun AccountPage(modifier: Modifier){
             Spacer(modifier = Modifier.width(25.dp))
 
             Button(modifier = Modifier
-                .background(brush = scannedBtnGradient,
-                    shape = RoundedCornerShape(25.dp))
+                .background(
+                    brush = scannedBtnGradient,
+                    shape = RoundedCornerShape(25.dp)
+                )
                 .height(btnSize)
                 .width(btnSize),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent,
-                    contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Black
+                ),
                 onClick = { /*TODO*/ }) {
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(id = R.drawable.scanner),
+                    Icon(
+                        painter = painterResource(id = R.drawable.scanner),
                         contentDescription = null,
                         modifier = Modifier
                             .width(logoSize)
-                            .height(logoSize))
+                            .height(logoSize)
+                    )
 
                     Spacer(modifier = Modifier.height(25.dp))
 
-                    Text(text = "Отсканированные QR",
-                        fontSize = txtSize)
+                    Text(
+                        text = "Отсканированные QR",
+                        fontSize = txtSize
+                    )
                 }
 
             }
@@ -114,6 +132,6 @@ fun AccountPage(modifier: Modifier){
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun AccountPagePrev(){
+fun AccountPagePrev() {
     AccountPage(modifier = Modifier.fillMaxSize())
 }

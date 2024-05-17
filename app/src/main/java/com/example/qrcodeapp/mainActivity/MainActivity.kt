@@ -3,27 +3,22 @@ package com.example.qrcodeapp.mainActivity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,36 +52,41 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Page{
+private enum class Page {
     MAIN, SCANNER, ACCOUNT
 }
 
 @Composable
 fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
 
-    val page = remember{
+    val page = remember {
         mutableStateOf(Page.MAIN)
     }
 
-    val active = remember{
+    val active = remember {
         mutableStateOf("главная")
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-    ){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
         Column(
             Modifier
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween) {
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
 
-            when(page.value){
+            when (page.value) {
                 Page.MAIN -> {
-                    MainPage(name = "fe",
+                    MainPage(
+                        name = "fe",
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1f))
+                            .weight(1f)
+                    )
                 }
+
                 Page.SCANNER -> TODO()
                 Page.ACCOUNT -> {
                     AccountPage(
@@ -97,15 +97,19 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                 }
             }
 
-            Row (horizontalArrangement = Arrangement.Center,
+            Row(
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .height(60.dp)
-                    .fillMaxWidth()){
-
-                Box(modifier = Modifier
-                    .fillMaxHeight()
                     .fillMaxWidth()
-                    .weight(1f)){
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
                     MenuButton(text = "главная", painterResource(id = R.drawable.home),
                         active = active.value,
                         action = {
@@ -113,10 +117,12 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                             active.value = "главная"
                         })
                 }
-                Box(modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .weight(1f)){
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
                     MenuButton(text = "сканер", painterResource(id = R.drawable.scanner),
                         active = active.value,
                         action = {
@@ -124,10 +130,12 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                             active.value = "сканер"
                         })
                 }
-                Box(modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .weight(1f)){
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
                     MenuButton(text = "моё", painterResource(id = R.drawable.account),
                         active = active.value,
                         action = {
@@ -141,13 +149,13 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
 }
 
 
-
-
 @Composable
-fun MenuButton(text: String,
-               painterResourse: Painter,
-               action:()->Unit,
-               active:String){
+fun MenuButton(
+    text: String,
+    painterResourse: Painter,
+    action: () -> Unit,
+    active: String
+) {
 
     val logoSize = 25.dp
 
@@ -155,11 +163,13 @@ fun MenuButton(text: String,
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = if(active == text) Color.Black else Color.Gray),
+            contentColor = if (active == text) Color.Black else Color.Gray
+        ),
         onClick = { action() }) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(painter = painterResourse,
+            Icon(
+                painter = painterResourse,
                 contentDescription = null,
                 modifier = Modifier
                     .width(logoSize)
@@ -167,8 +177,10 @@ fun MenuButton(text: String,
             )
 
 
-            Text(text = text,
-                fontSize = 15.sp)
+            Text(
+                text = text,
+                fontSize = 15.sp
+            )
         }
 
     }

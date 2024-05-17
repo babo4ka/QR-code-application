@@ -1,5 +1,6 @@
 package com.example.qrcodeapp.mainActivity.pages.mainPage
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,11 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
 
 
 @Composable
@@ -41,31 +45,45 @@ fun MainPage(name: String, modifier: Modifier) {
         end = Offset(500f, 500f)
     )
 
-    Box(modifier = modifier){
-        Row(horizontalArrangement = Arrangement.Center,
+    val context = LocalContext.current
+
+    Box(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()) {
+            modifier = Modifier.fillMaxSize()
+        ) {
             Button(modifier = Modifier
-                .background(brush = btnGradient,
-                    shape = RoundedCornerShape(25.dp))
+                .background(
+                    brush = btnGradient,
+                    shape = RoundedCornerShape(25.dp)
+                )
                 .height(200.dp)
                 .width(200.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color.Black),
-                onClick = { /*TODO*/ }) {
+                    contentColor = Color.Black
+                ),
+                onClick = {
+                    val intent = Intent(context, CreateQRMainActivity::class.java)
+                    ContextCompat.startActivity(context, intent, null)
+                }) {
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(id = R.drawable.qr_logo),
+                    Icon(
+                        painter = painterResource(id = R.drawable.qr_logo),
                         contentDescription = null,
                         modifier = Modifier
                             .width(qrLogoSize)
-                            .height(qrLogoSize))
+                            .height(qrLogoSize)
+                    )
 
                     Spacer(modifier = Modifier.height(25.dp))
 
-                    Text(text = "Создать QR-код",
-                        fontSize = 20.sp)
+                    Text(
+                        text = "Создать QR-код",
+                        fontSize = 20.sp
+                    )
                 }
 
             }
@@ -76,7 +94,9 @@ fun MainPage(name: String, modifier: Modifier) {
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun MainPagePrev (){
-    MainPage(name = "fe",
-        modifier = Modifier.fillMaxSize())
+fun MainPagePrev() {
+    MainPage(
+        name = "fe",
+        modifier = Modifier.fillMaxSize()
+    )
 }

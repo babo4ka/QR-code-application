@@ -50,6 +50,7 @@ android {
     }
 }
 
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -78,4 +79,5 @@ dependencies {
     kapt("androidx.room:room-compiler:$room_version")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
+
 }
