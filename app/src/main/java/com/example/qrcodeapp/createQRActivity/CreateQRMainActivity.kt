@@ -53,7 +53,7 @@ class CreateQRMainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val text = intent.getStringExtra("text")
-        val qrType = intent.getSerializableExtra("type", QrType::class.java)
+        //val qrType = intent.getSerializableExtra("type", QrType::class.java)
 
         setContent {
             QRCodeAppTheme {
@@ -61,7 +61,7 @@ class CreateQRMainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CreateQRActivityPage(text = text, qrType = qrType)
+                    CreateQRActivityPage(text = text, qrType = QrType.TEXT)
                 }
             }
         }
