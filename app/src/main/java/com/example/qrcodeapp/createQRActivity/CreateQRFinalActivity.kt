@@ -37,9 +37,12 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.createQRActivity.pages.colorsAndBackgroundPage.ColorChoosePage
+import com.example.qrcodeapp.createQRActivity.pages.shapePage.ShapeChoosePage
 import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
 import qrcode.QRCode
+import qrcode.QRCodeBuilder
 import qrcode.color.Colors
+import qrcode.shape.QRCodeShapeFunction
 
 class CreateQRFinalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +75,10 @@ fun QRCodeCreator(dataToEncode: String?) {
         mutableStateOf(Colors.BLACK)
     }
 
+    val qrShape = remember {
+        mutableStateOf("Круги")
+    }
+
     val qrBuilder = remember {
         mutableStateOf(
             QRCode.ofCircles()
@@ -97,10 +104,19 @@ fun QRCodeCreator(dataToEncode: String?) {
 
 
     fun rebuildQr(){
-        qrBuilder.value = QRCode
-            .ofCircles()
-            .withBackgroundColor(qrBackColor.value)
-            .withColor(qrColor.value)
+        var builder: QRCodeBuilder? = null
+
+        when(qrShape.value){
+            "Круги"-> builder = QRCode.ofCircles()
+            "Квадраты" -> builder = QRCode.ofSquares()
+            "Закругленные квадраты" -> builder = QRCode.ofRoundedSquares()
+        }
+
+        if (builder != null) {
+            qrBuilder.value = builder
+                .withBackgroundColor(qrBackColor.value)
+                .withColor(qrColor.value)
+        }
     }
 
     Box(
@@ -256,6 +272,13 @@ fun QRCodeCreator(dataToEncode: String?) {
                             "Фон"->{
                                 ColorChoosePage {
                                     qrBackColor.value = it
+                                    rebuildQr()
+                                }
+                            }
+
+                            "Форма"->{
+                                ShapeChoosePage {
+                                    qrShape.value = it
                                     rebuildQr()
                                 }
                             }
