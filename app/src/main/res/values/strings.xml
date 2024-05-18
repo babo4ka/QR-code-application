@@ -3,4 +3,5 @@
     <string name="title_activity_main_page">MainPageActivity</string>
     <string name="title_activity_account_page">AccountPage</string>
     <string name="title_activity_create_qrmain">CreateQRMainActivity</string>
+    <string name="title_activity_create_qrfinal">CreateQRFinalActivity</string>
 </resources>

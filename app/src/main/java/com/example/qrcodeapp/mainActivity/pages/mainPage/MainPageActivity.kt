@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
+import com.example.qrcodeapp.createQRActivity.QrType
 
 
 @Composable
@@ -66,6 +67,7 @@ fun MainPage(name: String, modifier: Modifier) {
                 ),
                 onClick = {
                     val intent = Intent(context, CreateQRMainActivity::class.java)
+                    intent.putExtra("type", QrType.TEXT)
                     ContextCompat.startActivity(context, intent, null)
                 }) {
 
