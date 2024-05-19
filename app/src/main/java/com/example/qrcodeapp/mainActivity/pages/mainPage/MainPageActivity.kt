@@ -28,8 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
 import com.example.qrcodeapp.createQRActivity.QrType
+import com.example.qrcodeapp.database.CurrentDataHandler
 
 
 @Composable
@@ -49,11 +51,15 @@ fun MainPage(name: String, modifier: Modifier) {
     val context = LocalContext.current
 
     Box(modifier = modifier) {
+        if(CurrentDataHandler.getActiveUser() == null){
+            Reminder()
+        }
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize()
         ) {
+
             Button(modifier = Modifier
                 .background(
                     brush = btnGradient,

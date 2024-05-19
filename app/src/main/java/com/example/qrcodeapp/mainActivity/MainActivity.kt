@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.database.CurrentDataHandler
-import com.example.qrcodeapp.database.databases.UsersDatabase
+import com.example.qrcodeapp.database.databases.QrDatabase
 import com.example.qrcodeapp.database.viewModels.UserViewModel
 import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dao = UsersDatabase.getInstance(application).userDao
+        val dao = QrDatabase.getInstance(application).userDao
         val viewModelFactory = UserViewModelFactory(dao)
         val uvm = ViewModelProvider(this, viewModelFactory).get(UserViewModel::class.java)
 
