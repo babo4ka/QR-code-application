@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.qrcodeapp.database.daos.CreatedCodesDao
+import com.example.qrcodeapp.database.daos.ScannedCodesDao
 import com.example.qrcodeapp.database.daos.UserDao
 import com.example.qrcodeapp.database.entities.CreatedCodes
 import com.example.qrcodeapp.database.entities.ScannedCodes
@@ -14,6 +16,10 @@ import com.example.qrcodeapp.database.entities.User
 abstract class QrDatabase: RoomDatabase() {
 
     abstract val userDao: UserDao
+
+    abstract val createdCodesDao: CreatedCodesDao
+
+    abstract val scannedCodesDao: ScannedCodesDao
 
     companion object{
         @Volatile

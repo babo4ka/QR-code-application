@@ -3,6 +3,7 @@ package com.example.qrcodeapp.createQRActivity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -35,11 +36,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.pages.colorsAndBackgroundPage.ColorChoosePage
 import com.example.qrcodeapp.createQRActivity.pages.logoChooseActivity.LogoChoosePage
 import com.example.qrcodeapp.createQRActivity.pages.shapePage.ShapeChoosePage
 import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
+import com.example.qrcodeapp.database.CurrentDataHandler
+import com.example.qrcodeapp.database.databases.QrDatabase
+import com.example.qrcodeapp.database.viewModels.CreatedCodesViewModel
+import com.example.qrcodeapp.database.viewModels.UserViewModel
+import com.example.qrcodeapp.database.viewModels.factories.CreatedCodesViewModelFactory
+import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import qrcode.QRCode
 import qrcode.QRCodeBuilder
 import qrcode.color.Colors
@@ -49,7 +58,10 @@ class CreateQRFinalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dataToEncode = intent.getStringExtra("data")
+
+        val dao = QrDatabase.getInstance(application).createdCodesDao
+        val viewModelFactory = CreatedCodesViewModelFactory(dao)
+        val ccvm = ViewModelProvider(this, viewModelFactory).get(CreatedCodesViewModel::class.java)
 
         setContent {
             QRCodeAppTheme {
@@ -58,7 +70,7 @@ class CreateQRFinalActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QRCodeCreator(dataToEncode)
+                    QRCodeCreator(ccvm = ccvm)
                 }
             }
         }
@@ -66,13 +78,13 @@ class CreateQRFinalActivity : ComponentActivity() {
 }
 
 @Composable
-fun QRCodeCreator(dataToEncode: String?) {
+fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
 
-    val qrColor = remember{
+    val qrColor = remember {
         mutableStateOf(Colors.WHITE)
     }
 
-    val qrBackColor = remember{
+    val qrBackColor = remember {
         mutableStateOf(Colors.BLACK)
     }
 
@@ -80,7 +92,7 @@ fun QRCodeCreator(dataToEncode: String?) {
         mutableStateOf("Круги")
     }
 
-    val qrLogo = remember{
+    val qrLogo = remember {
         mutableStateOf("")
     }
 
@@ -92,7 +104,7 @@ fun QRCodeCreator(dataToEncode: String?) {
         )
     }
 
-    val activeCustomizeOption = remember{
+    val activeCustomizeOption = remember {
         mutableStateOf("Цвет")
     }
 
@@ -103,21 +115,39 @@ fun QRCodeCreator(dataToEncode: String?) {
     val contentWeight = 5f
     val footerWeight = 3f
 
+    fun qrToBytes(): ByteArray? {
+        return qrBuilder.value.build(CurrentDataHandler.getTextEntered()).render().getBytes()
+    }
+
     fun qrCode(): ImageBitmap? {
-        val bytes = dataToEncode?.let { qrBuilder.value.build(it).render().getBytes() }
+        val bytes = qrToBytes()
         return bytes?.size?.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
     }
 
-    fun rebuildQr(){
+    fun saveQrCodeToDb() {
+        val bytes = qrToBytes()
+        val user = CurrentDataHandler.getActiveUser()
+
+        if (user != null) {
+            if (bytes != null) {
+                ccvm?.addCode(user.userLogin, bytes)
+
+                Toast.makeText(context, "QR-код сохранён в истории", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+    fun rebuildQr() {
         var builder: QRCodeBuilder? = null
 
-        when(qrShape.value){
-            "Круги"-> builder = QRCode.ofCircles()
+        when (qrShape.value) {
+            "Круги" -> builder = QRCode.ofCircles()
             "Квадраты" -> builder = QRCode.ofSquares()
             "Закругленные квадраты" -> builder = QRCode.ofRoundedSquares()
         }
 
-        if(qrLogo.value != ""){
+        if (qrLogo.value != "") {
             val logoFile = assets.open(qrLogo.value)
             val byteArray = logoFile.readBytes()
 
@@ -139,11 +169,14 @@ fun QRCodeCreator(dataToEncode: String?) {
             .fillMaxSize()
             .padding(horizontal = 10.dp)
     ) {
-
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            if(CurrentDataHandler.getActiveUser() == null){
+                Reminder()
+            }
+
 
             Row(
                 horizontalArrangement = Arrangement.Center,
@@ -157,7 +190,6 @@ fun QRCodeCreator(dataToEncode: String?) {
                 Button(
                     onClick = {
                         val intent = Intent(context, CreateQRMainActivity::class.java)
-                        intent.putExtra("text", dataToEncode)
                         ContextCompat.startActivity(context, intent, null)
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -189,7 +221,9 @@ fun QRCodeCreator(dataToEncode: String?) {
                 //Spacer(modifier = Modifier.weight(1f))
 
                 Button(
-                    onClick = {},
+                    onClick = {
+                        saveQrCodeToDb()
+                    },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.Black,
                         containerColor = Color.Green
@@ -231,11 +265,12 @@ fun QRCodeCreator(dataToEncode: String?) {
                                 .fillMaxHeight()
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ){
+                        ) {
                             ChooseOptionToCustomizeBtn(
-                                action = {activeCustomizeOption.value = "Цвет"},
+                                action = { activeCustomizeOption.value = "Цвет" },
                                 text = "Цвет",
-                                active = activeCustomizeOption.value)
+                                active = activeCustomizeOption.value
+                            )
                         }
 
                         Box(
@@ -243,11 +278,12 @@ fun QRCodeCreator(dataToEncode: String?) {
                                 .fillMaxHeight()
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ){
+                        ) {
                             ChooseOptionToCustomizeBtn(
-                                action = { activeCustomizeOption.value = "Фон"},
+                                action = { activeCustomizeOption.value = "Фон" },
                                 text = "Фон",
-                                active = activeCustomizeOption.value)
+                                active = activeCustomizeOption.value
+                            )
                         }
 
                         Box(
@@ -255,11 +291,12 @@ fun QRCodeCreator(dataToEncode: String?) {
                                 .fillMaxHeight()
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ){
+                        ) {
                             ChooseOptionToCustomizeBtn(
                                 action = { activeCustomizeOption.value = "Форма" },
                                 text = "Форма",
-                                active = activeCustomizeOption.value)
+                                active = activeCustomizeOption.value
+                            )
                         }
 
                         Box(
@@ -267,39 +304,40 @@ fun QRCodeCreator(dataToEncode: String?) {
                                 .fillMaxHeight()
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ){
+                        ) {
                             ChooseOptionToCustomizeBtn(
-                                action = { activeCustomizeOption.value = "Лого"},
+                                action = { activeCustomizeOption.value = "Лого" },
                                 text = "Лого",
-                                active = activeCustomizeOption.value)
+                                active = activeCustomizeOption.value
+                            )
                         }
                     }
 
                     Box(modifier = Modifier.weight(4f)) {
-                        when(activeCustomizeOption.value){
-                            "Цвет"-> {
+                        when (activeCustomizeOption.value) {
+                            "Цвет" -> {
                                 ColorChoosePage {
                                     qrColor.value = it
                                     rebuildQr()
                                 }
                             }
 
-                            "Фон"->{
+                            "Фон" -> {
                                 ColorChoosePage {
                                     qrBackColor.value = it
                                     rebuildQr()
                                 }
                             }
 
-                            "Форма"->{
+                            "Форма" -> {
                                 ShapeChoosePage {
                                     qrShape.value = it
                                     rebuildQr()
                                 }
                             }
 
-                            "Лого"->{
-                                LogoChoosePage{
+                            "Лого" -> {
+                                LogoChoosePage {
                                     qrLogo.value = it
                                     rebuildQr()
                                 }
@@ -318,15 +356,17 @@ fun QRCodeCreator(dataToEncode: String?) {
 @Composable
 fun ChooseOptionToCustomizeBtn(
     action: () -> Unit,
-    text:String,
-    active:String
+    text: String,
+    active: String
 ) {
-    Button(modifier = Modifier.fillMaxSize(),
+    Button(
+        modifier = Modifier.fillMaxSize(),
         onClick = { action() },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (active == text) Color.Black else Color.Transparent,
             contentColor = if (active == text) Color.White else Color.Black
-        )) {
+        )
+    ) {
 
         Text(text = text)
     }
@@ -337,6 +377,6 @@ fun ChooseOptionToCustomizeBtn(
 @Composable
 fun CreatorPreview() {
     QRCodeAppTheme {
-        QRCodeCreator("Android")
+        QRCodeCreator(ccvm = null)
     }
 }

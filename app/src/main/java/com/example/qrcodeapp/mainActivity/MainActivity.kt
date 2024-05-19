@@ -87,9 +87,7 @@ fun MainActivityPage(uvm:UserViewModel?) {
 
             when (page.value) {
                 Page.MAIN -> {
-                    MainPage(
-                        name = "fe",
-                        modifier = Modifier
+                    MainPage(modifier = Modifier
                             .fillMaxSize()
                             .weight(1f)
                     )
@@ -146,11 +144,11 @@ fun MainActivityPage(uvm:UserViewModel?) {
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
-                    MenuButton(text = "моё", painterResource(id = R.drawable.account),
+                    MenuButton(text = "кабинет", painterResource(id = R.drawable.account),
                         active = active.value,
                         action = {
                             page.value = Page.ACCOUNT
-                            active.value = "моё"
+                            active.value = "кабинет"
                         })
                 }
             }

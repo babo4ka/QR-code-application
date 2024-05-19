@@ -35,7 +35,7 @@ import com.example.qrcodeapp.database.CurrentDataHandler
 
 
 @Composable
-fun MainPage(name: String, modifier: Modifier) {
+fun MainPage(modifier: Modifier) {
 
     val qrLogoSize = 75.dp
 
@@ -102,8 +102,5 @@ fun MainPage(name: String, modifier: Modifier) {
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun MainPagePrev() {
-    MainPage(
-        name = "fe",
-        modifier = Modifier.fillMaxSize()
-    )
+    MainPage(modifier = Modifier.fillMaxSize())
 }

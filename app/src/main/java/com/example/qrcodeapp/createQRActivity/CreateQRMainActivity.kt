@@ -148,10 +148,8 @@ fun CreateQRActivityPage() {
                 Button(
                     onClick = {
                         if (textToEncode.value != "") {
-                            val intent = Intent(context, CreateQRFinalActivity::class.java)
-                            //intent.putExtra("data", textToEncode.value)
                             CurrentDataHandler.setTextEntered(textToEncode.value)
-                            //CurrentDataHandler.setQrTypeChoosed(qrType)
+                            val intent = Intent(context, CreateQRFinalActivity::class.java)
                             ContextCompat.startActivity(context, intent, null)
                         } else {
                             Toast.makeText(context, "Вы ничего не ввели!!", Toast.LENGTH_SHORT)
