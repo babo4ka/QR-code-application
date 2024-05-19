@@ -110,6 +110,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
     val context = LocalContext.current
     val assets = context.resources.assets
 
+
     val headerWeight = 1f
     val contentWeight = 5f
     val footerWeight = 3f
