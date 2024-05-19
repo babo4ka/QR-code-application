@@ -13,6 +13,16 @@
         android:theme="@style/Theme.QRCodeApp"
         tools:targetApi="31">
         <activity
+            android:name=".mainActivity.pages.accountPage.QrCodeInspectActivity"
+            android:exported="false"
+            android:label="@string/title_activity_qr_code_inspect"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
+            android:name=".mainActivity.pages.accountPage.CreatedCodesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_created_codes"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
             android:name=".ReminderActivity"
             android:exported="false"
             android:label="@string/title_activity_reminder"

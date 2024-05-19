@@ -46,13 +46,12 @@ import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
 import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.databases.QrDatabase
 import com.example.qrcodeapp.database.viewModels.CreatedCodesViewModel
-import com.example.qrcodeapp.database.viewModels.UserViewModel
 import com.example.qrcodeapp.database.viewModels.factories.CreatedCodesViewModelFactory
-import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
+import com.example.qrcodeapp.mainActivity.MainActivity
+import com.example.qrcodeapp.mainActivity.Page
 import qrcode.QRCode
 import qrcode.QRCodeBuilder
 import qrcode.color.Colors
-import qrcode.shape.QRCodeShapeFunction
 
 class CreateQRFinalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,13 +114,13 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
     val contentWeight = 5f
     val footerWeight = 3f
 
-    fun qrToBytes(): ByteArray? {
+    fun qrToBytes(): ByteArray {
         return qrBuilder.value.build(CurrentDataHandler.getTextEntered()).render().getBytes()
     }
 
-    fun qrCode(): ImageBitmap? {
+    fun qrCode(): ImageBitmap {
         val bytes = qrToBytes()
-        return bytes?.size?.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
+        return bytes.size.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
     }
 
     fun saveQrCodeToDb() {
@@ -129,12 +128,10 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
         val user = CurrentDataHandler.getActiveUser()
 
         if (user != null) {
-            if (bytes != null) {
-                ccvm?.addCode(user.userLogin, bytes)
+            ccvm?.addCode(user.userLogin, bytes, CurrentDataHandler.getTextEntered())
 
-                Toast.makeText(context, "QR-код сохранён в истории", Toast.LENGTH_SHORT)
-                    .show()
-            }
+            Toast.makeText(context, "QR-код сохранён в истории", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -223,6 +220,11 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                 Button(
                     onClick = {
                         saveQrCodeToDb()
+                        CurrentDataHandler.setTextEntered("")
+                        CurrentDataHandler.setQrTypeChoosed(QrType.TEXT)
+                        CurrentDataHandler.setMainActivityPage(Page.MAIN)
+                        val intent = Intent(context, MainActivity::class.java)
+                        ContextCompat.startActivity(context, intent, null)
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.Black,
@@ -240,7 +242,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                     .weight(contentWeight)
             ) {
 
-                qrCode()?.let { Image(bitmap = it, contentDescription = null) }
+                Image(bitmap = qrCode(), contentDescription = null)
             }
 
             Box(

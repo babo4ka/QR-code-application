@@ -86,7 +86,7 @@ fun LoginRegistrationPage(modifier: Modifier,
                 }
             }
 
-            HorizontalPager(modifier = Modifier.height(250.dp),
+            HorizontalPager(
                 state = pagerState) { page ->
                 when (page) {
                     0 -> {
@@ -149,7 +149,6 @@ fun LoginPage(uvm: UserViewModel?, action:(User?)->Unit) {
 
             TextButton(modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-
                 .shadow(1.dp)
                 .height(45.dp)
                 .width(100.dp),

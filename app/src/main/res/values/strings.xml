@@ -12,4 +12,6 @@
     <string name="title_activity_dsa">dsa</string>
     <string name="title_activity_login_page">LoginPageActivity</string>
     <string name="title_activity_reminder">ReminderActivity</string>
+    <string name="title_activity_created_codes">CreatedCodesActivity</string>
+    <string name="title_activity_qr_code_inspect">QrCodeInspectActivity</string>
 </resources>

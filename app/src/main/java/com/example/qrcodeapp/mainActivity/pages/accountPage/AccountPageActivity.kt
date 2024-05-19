@@ -1,5 +1,6 @@
 package com.example.qrcodeapp.mainActivity.pages.accountPage
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,18 +26,21 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
 import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.entities.User
 import com.example.qrcodeapp.database.viewModels.UserViewModel
 
 
 @Composable
-fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
+fun AccountPage(modifier: Modifier, uvm: UserViewModel?) {
 
     val logoSize = 50.dp
     val btnSize = 150.dp
@@ -46,9 +50,11 @@ fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
         mutableStateOf(CurrentDataHandler.getActiveUser())
     }
 
-    fun setActiveUser(user: User?){
+    fun setActiveUser(user: User?) {
         activeUser.value = user
     }
+
+    val context = LocalContext.current
 
 
     val createdBtnGradient = Brush.linearGradient(
@@ -69,12 +75,12 @@ fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
         end = Offset(500f, 500f)
     )
 
-    if(activeUser.value == null){
+    if (activeUser.value == null) {
         LoginRegistrationPage(modifier = modifier,
             uvm = uvm, action = {
-            setActiveUser(it)
-        })
-    }else{
+                setActiveUser(it)
+            })
+    } else {
         Box(modifier = modifier) {
             Button(modifier = Modifier
                 .shadow(1.dp),
@@ -89,14 +95,17 @@ fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
                 }) {
                 Text(text = "Выйти из аккаунта")
             }
-            Column(modifier = Modifier.fillMaxSize(),
+            Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically)) {
+                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically)
+            ) {
 
 
-
-                Text(text = "Твои QR-коды, ${activeUser.value?.name}",
-                    fontSize = 25.sp)
+                Text(
+                    text = "Твои QR-коды, ${activeUser.value?.name}",
+                    fontSize = 25.sp
+                )
 
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -114,7 +123,10 @@ fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
                             containerColor = Color.Transparent,
                             contentColor = Color.Black
                         ),
-                        onClick = { /*TODO*/ }) {
+                        onClick = {
+                            val intent = Intent(context, CreatedCodesActivity::class.java)
+                            ContextCompat.startActivity(context, intent, null)
+                        }) {
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(

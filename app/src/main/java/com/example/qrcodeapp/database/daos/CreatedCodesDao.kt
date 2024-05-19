@@ -10,7 +10,7 @@ import com.example.qrcodeapp.database.entities.CreatedCodes
 
 @Dao
 interface CreatedCodesDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert
     suspend fun insert(code: CreatedCodes)
 
     @Update
@@ -19,6 +19,9 @@ interface CreatedCodesDao {
     @Delete
     fun delete(code: CreatedCodes)
 
+    @Query("SELECT * FROM created_codes WHERE id = :id")
+    suspend fun getCode(id: Int):CreatedCodes
+
     @Query("SELECT * FROM created_codes WHERE owner = :userLogin")
-    suspend fun get(userLogin: String) : List<CreatedCodes>
+    suspend fun getAllCodes(userLogin: String) : List<CreatedCodes>
 }

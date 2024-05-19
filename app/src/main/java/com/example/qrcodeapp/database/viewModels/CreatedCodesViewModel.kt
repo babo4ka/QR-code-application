@@ -9,20 +9,28 @@ import kotlinx.coroutines.launch
 
 class CreatedCodesViewModel(val dao: CreatedCodesDao): ViewModel() {
 
-    fun addCode(userLogin: String, content:ByteArray){
+    fun addCode(userLogin: String, qrCode:ByteArray, content:String){
         viewModelScope.launch {
             val code = CreatedCodes()
 
             code.owner = userLogin
+            code.code = qrCode
             code.content = content
             dao.insert(code)
         }
     }
 
-
-    suspend fun getCode(userLogin: String): List<CreatedCodes> {
+    suspend fun getCode(id:Int):CreatedCodes{
         val res = viewModelScope.async {
-            dao.get(userLogin)
+            dao.getCode(id)
+        }
+
+        return res.await()
+    }
+
+    suspend fun getAllCodes(userLogin: String): List<CreatedCodes> {
+        val res = viewModelScope.async {
+            dao.getAllCodes(userLogin)
         }
 
         return res.await()

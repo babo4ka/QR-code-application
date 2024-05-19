@@ -6,10 +6,12 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "created_codes")
 data class CreatedCodes(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
 
-    var content: ByteArray = ByteArray(0),
+    var code: ByteArray = ByteArray(0),
+
+    var content:String = "",
 
     var owner: String = ""
 )
