@@ -43,8 +43,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
+import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.mainActivity.MainActivity
+import com.example.qrcodeapp.mainActivity.Page
 import java.time.Duration
 
 class CreateQRMainActivity : ComponentActivity() {
@@ -52,8 +55,6 @@ class CreateQRMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val text = intent.getStringExtra("text")
-        //val qrType = intent.getSerializableExtra("type", QrType::class.java)
 
         setContent {
             QRCodeAppTheme {
@@ -61,7 +62,7 @@ class CreateQRMainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CreateQRActivityPage(text = text, qrType = QrType.TEXT)
+                    CreateQRActivityPage()
                 }
             }
         }
@@ -70,7 +71,7 @@ class CreateQRMainActivity : ComponentActivity() {
 
 
 @Composable
-fun CreateQRActivityPage(text:String?, qrType:QrType?) {
+fun CreateQRActivityPage() {
 
     val context = LocalContext.current
 
@@ -79,11 +80,11 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
     val footerWeight = 3f
 
     val activeButton = remember {
-        mutableStateOf(qrType)
+        mutableStateOf(CurrentDataHandler.getQrTypeChoosed())
     }
 
-    val textToEncode = remember{
-        mutableStateOf(text ?: "")
+    val textToEncode = remember {
+        mutableStateOf(CurrentDataHandler.getTextEntered())
     }
 
 
@@ -97,6 +98,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            if(CurrentDataHandler.getActiveUser() == null){
+                Reminder()
+            }
+
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -108,6 +113,7 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
             ) {
                 Button(
                     onClick = {
+                        CurrentDataHandler.setMainActivityPage(Page.MAIN)
                         val intent = Intent(context, MainActivity::class.java)
                         ContextCompat.startActivity(context, intent, null)
                     },
@@ -141,12 +147,15 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
 
                 Button(
                     onClick = {
-                        if(textToEncode.value != ""){
+                        if (textToEncode.value != "") {
                             val intent = Intent(context, CreateQRFinalActivity::class.java)
-                            intent.putExtra("data", textToEncode.value)
+                            //intent.putExtra("data", textToEncode.value)
+                            CurrentDataHandler.setTextEntered(textToEncode.value)
+                            //CurrentDataHandler.setQrTypeChoosed(qrType)
                             ContextCompat.startActivity(context, intent, null)
-                        }else{
-                            Toast.makeText(context, "Вы ничего не ввели!!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Вы ничего не ввели!!", Toast.LENGTH_SHORT)
+                                .show()
                         }
 
                     },
@@ -161,17 +170,20 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
             }
 
             //content
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .weight(contentWeight)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(contentWeight)
+            ) {
 
-                when(activeButton.value){
-                    QrType.TEXT ->{
-                        TextArea(text = textToEncode.value,
+                when (activeButton.value) {
+                    QrType.TEXT -> {
+                        TextArea(
+                            text = textToEncode.value,
                             label = "Текст",
                             placeholder = "Введите текст",
                             prefix = ""
-                        ){
+                        ) {
                             textToEncode.value = it
                         }
                     }
@@ -181,19 +193,22 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                             text = textToEncode.value,
                             label = "Ссылка",
                             placeholder = "Введите ссылку",
-                            prefix = "https://"){
+                            prefix = "https://"
+                        ) {
                             textToEncode.value = it
                         }
                     }
+
                     QrType.TG -> {
                         TextArea(
                             text = textToEncode.value,
                             label = "Ссылка на телеграм",
                             placeholder = "Введите имя пользователя в телеграм",
-                            prefix="https://t.me/"){
+                            prefix = "https://t.me/"
+                        ) {
                             textToEncode.value = it
                         }
-                        }
+                    }
 
                     QrType.IMG -> TODO()
                     QrType.FILE -> TODO()
@@ -225,7 +240,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                                 QRTypeButton(
                                     text = "Текст",
                                     painter = painterResource(id = R.drawable.text),
-                                    action = { activeButton.value = QrType.TEXT },
+                                    action = {
+                                        CurrentDataHandler.setQrTypeChoosed(QrType.TEXT)
+                                        activeButton.value = QrType.TEXT
+                                    },
                                     active = it,
                                     type = QrType.TEXT
                                 )
@@ -241,7 +259,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                                 QRTypeButton(
                                     text = "Ссылка",
                                     painter = painterResource(id = R.drawable.link),
-                                    action = { activeButton.value = QrType.LINK },
+                                    action = {
+                                        CurrentDataHandler.setQrTypeChoosed(QrType.LINK)
+                                        activeButton.value = QrType.LINK
+                                    },
                                     active = it,
                                     type = QrType.LINK
                                 )
@@ -256,7 +277,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                                 QRTypeButton(
                                     text = "Телеграм",
                                     painter = painterResource(id = R.drawable.telegram),
-                                    action = { activeButton.value = QrType.TG },
+                                    action = {
+                                        CurrentDataHandler.setQrTypeChoosed(QrType.TG)
+                                        activeButton.value = QrType.TG
+                                    },
                                     active = it,
                                     type = QrType.TG
                                 )
@@ -280,7 +304,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                                 QRTypeButton(
                                     text = "Картинка",
                                     painter = painterResource(id = R.drawable.img),
-                                    action = { activeButton.value = QrType.IMG },
+                                    action = {
+                                        CurrentDataHandler.setQrTypeChoosed(QrType.IMG)
+                                        activeButton.value = QrType.IMG
+                                    },
                                     active = it,
                                     type = QrType.IMG
                                 )
@@ -295,7 +322,10 @@ fun CreateQRActivityPage(text:String?, qrType:QrType?) {
                                 QRTypeButton(
                                     text = "Файл",
                                     painter = painterResource(id = R.drawable.file),
-                                    action = { activeButton.value = QrType.FILE },
+                                    action = {
+                                        CurrentDataHandler.setQrTypeChoosed(QrType.FILE)
+                                        activeButton.value = QrType.FILE
+                                    },
                                     active = it,
                                     type = QrType.FILE
                                 )
@@ -355,17 +385,18 @@ fun QRTypeButton(
 }
 
 
-
 @Composable
-fun TextArea(text:String,
-             prefix:String,
-             label:String,
-             placeholder:String,
-             action:(String)->Unit){
+fun TextArea(
+    text: String,
+    prefix: String,
+    label: String,
+    placeholder: String,
+    action: (String) -> Unit
+) {
     TextField(
         value = text,
         onValueChange = { action(it) },
-        label = { Text(text = label)},
+        label = { Text(text = label) },
         modifier = Modifier.fillMaxSize(),
         shape = RoundedCornerShape(20.dp),
         colors = TextFieldDefaults.colors(
@@ -373,8 +404,8 @@ fun TextArea(text:String,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
         ),
-        prefix = { Text(text = prefix)},
-        placeholder = {Text(text = placeholder)}
+        prefix = { Text(text = prefix) },
+        placeholder = { Text(text = placeholder) }
     )
 }
 
@@ -382,6 +413,6 @@ fun TextArea(text:String,
 @Composable
 fun CreateQRActivityPagePreview() {
     QRCodeAppTheme {
-        CreateQRActivityPage("Тут будет текст", QrType.TEXT)
+        CreateQRActivityPage()
     }
 }

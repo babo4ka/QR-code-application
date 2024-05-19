@@ -31,7 +31,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.database.CurrentDataHandler
+import com.example.qrcodeapp.database.databases.UsersDatabase
+import com.example.qrcodeapp.database.viewModels.UserViewModel
+import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
 import com.example.qrcodeapp.mainActivity.pages.mainPage.MainPage
 import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
@@ -39,6 +44,11 @@ import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val dao = UsersDatabase.getInstance(application).userDao
+        val viewModelFactory = UserViewModelFactory(dao)
+        val uvm = ViewModelProvider(this, viewModelFactory).get(UserViewModel::class.java)
+
         setContent {
             QRCodeAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -46,22 +56,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainActivityPage("Android")
+                    MainActivityPage(uvm = uvm)
                 }
             }
         }
     }
 }
 
-private enum class Page {
-    MAIN, SCANNER, ACCOUNT
-}
 
 @Composable
-fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
+fun MainActivityPage(uvm:UserViewModel?) {
 
     val page = remember {
-        mutableStateOf(Page.MAIN)
+        mutableStateOf(CurrentDataHandler.getMainActivityPage())
     }
 
     val active = remember {
@@ -93,7 +100,8 @@ fun MainActivityPage(name: String, modifier: Modifier = Modifier) {
                     AccountPage(
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1f)
+                            .weight(1f),
+                        uvm = uvm
                     )
                 }
             }
@@ -193,6 +201,6 @@ fun MenuButton(
 @Composable
 fun MainActivityPreview() {
     QRCodeAppTheme {
-        MainActivityPage("Android")
+        MainActivityPage(null)
     }
 }

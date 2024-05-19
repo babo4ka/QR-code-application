@@ -10,4 +10,6 @@
     <string name="title_activity_shape_choose_page">ShapeChoosePage</string>
     <string name="title_activity_logo_choose_page">LogoChoosePage</string>
     <string name="title_activity_dsa">dsa</string>
+    <string name="title_activity_login_page">LoginPageActivity</string>
+    <string name="title_activity_reminder">ReminderActivity</string>
 </resources>

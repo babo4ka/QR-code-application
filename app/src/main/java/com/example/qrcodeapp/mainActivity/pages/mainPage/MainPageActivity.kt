@@ -67,7 +67,6 @@ fun MainPage(name: String, modifier: Modifier) {
                 ),
                 onClick = {
                     val intent = Intent(context, CreateQRMainActivity::class.java)
-                    intent.putExtra("type", QrType.TEXT)
                     ContextCompat.startActivity(context, intent, null)
                 }) {
 

@@ -16,24 +16,39 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.database.CurrentDataHandler
+import com.example.qrcodeapp.database.entities.User
+import com.example.qrcodeapp.database.viewModels.UserViewModel
 
 
 @Composable
-fun AccountPage(modifier: Modifier) {
+fun AccountPage(modifier: Modifier, uvm:UserViewModel?) {
 
     val logoSize = 50.dp
     val btnSize = 150.dp
     val txtSize = 15.sp
+
+    val activeUser = remember {
+        mutableStateOf(CurrentDataHandler.getActiveUser())
+    }
+
+    fun setActiveUser(user: User?){
+        activeUser.value = user
+    }
 
 
     val createdBtnGradient = Brush.linearGradient(
@@ -54,84 +69,118 @@ fun AccountPage(modifier: Modifier) {
         end = Offset(500f, 500f)
     )
 
-    Box(modifier = modifier) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
-        ) {
+    if(activeUser.value == null){
+        LoginRegistrationPage(modifier = modifier,
+            uvm = uvm, action = {
+            setActiveUser(it)
+        })
+    }else{
+        Box(modifier = modifier) {
             Button(modifier = Modifier
-                .background(
-                    brush = createdBtnGradient,
-                    shape = RoundedCornerShape(25.dp)
-                )
-                .height(btnSize)
-                .width(btnSize),
+                .shadow(1.dp),
+                shape = RectangleShape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Black
+                    containerColor = Color.Black,
+                    contentColor = Color.White
                 ),
-                onClick = { /*TODO*/ }) {
+                onClick = {
+                    CurrentDataHandler.setActiveUser(null)
+                    setActiveUser(null)
+                }) {
+                Text(text = "Выйти из аккаунта")
+            }
+            Column(modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically)) {
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.qr_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(logoSize)
-                            .height(logoSize)
-                    )
 
-                    Spacer(modifier = Modifier.height(25.dp))
 
-                    Text(
-                        text = "Созданные QR",
-                        fontSize = txtSize
-                    )
+                Text(text = "Твои QR-коды, ${activeUser.value?.name}",
+                    fontSize = 25.sp)
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(modifier = Modifier
+                        .background(
+                            brush = createdBtnGradient,
+                            shape = RoundedCornerShape(25.dp)
+                        )
+                        .height(btnSize)
+                        .width(btnSize),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.Black
+                        ),
+                        onClick = { /*TODO*/ }) {
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.qr_logo),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(logoSize)
+                                    .height(logoSize)
+                            )
+
+                            Spacer(modifier = Modifier.height(25.dp))
+
+                            Text(
+                                text = "Созданные QR",
+                                fontSize = txtSize
+                            )
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.width(25.dp))
+
+                    Button(modifier = Modifier
+                        .background(
+                            brush = scannedBtnGradient,
+                            shape = RoundedCornerShape(25.dp)
+                        )
+                        .height(btnSize)
+                        .width(btnSize),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.Black
+                        ),
+                        onClick = { /*TODO*/ }) {
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.scanner),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(logoSize)
+                                    .height(logoSize)
+                            )
+
+                            Spacer(modifier = Modifier.height(25.dp))
+
+                            Text(
+                                text = "Отсканированные QR",
+                                fontSize = txtSize
+                            )
+                        }
+
+                    }
                 }
-
             }
 
-            Spacer(modifier = Modifier.width(25.dp))
 
-            Button(modifier = Modifier
-                .background(
-                    brush = scannedBtnGradient,
-                    shape = RoundedCornerShape(25.dp)
-                )
-                .height(btnSize)
-                .width(btnSize),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Black
-                ),
-                onClick = { /*TODO*/ }) {
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.scanner),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(logoSize)
-                            .height(logoSize)
-                    )
-
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    Text(
-                        text = "Отсканированные QR",
-                        fontSize = txtSize
-                    )
-                }
-
-            }
         }
     }
+
+
 }
 
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun AccountPagePrev() {
-    AccountPage(modifier = Modifier.fillMaxSize())
+    AccountPage(modifier = Modifier.fillMaxSize(), uvm = null)
 }
