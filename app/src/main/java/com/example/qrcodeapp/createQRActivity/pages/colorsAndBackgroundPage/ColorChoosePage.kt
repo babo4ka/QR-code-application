@@ -26,6 +26,13 @@ import qrcode.color.Colors
 @Composable
 fun ColorChoosePage(action: (color:Int)->Unit){
 
+    val firstRowColors = listOf(Color.Black, Color.Red, Color.Green, Color.Yellow)
+    val secondRowColors = listOf(Color.Blue, Color.Magenta, Color.Cyan, Color.White)
+
+    val firstRowColorsToChange = listOf(Colors.BLACK, Colors.RED, Colors.GREEN, Colors.YELLOW)
+    val secondRowColorsToChange = listOf(Colors.BLUE, Colors.MAGENTA, Colors.CYAN, Colors.WHITE)
+
+
     Box(modifier = Modifier.fillMaxSize()){
         Column(
             Modifier
@@ -38,48 +45,38 @@ fun ColorChoosePage(action: (color:Int)->Unit){
                     .fillMaxWidth()
                     .height(50.dp)){
 
-                Box(
+                firstRowColors.forEachIndexed{ id, item ->
+                    Box(
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth()
                         .weight(1f)
-                ){
-                    ColorButton(action = action,
-                        color = Color.Black,
-                        colorToChange = Colors.BLACK)
+                    ){
+                        ColorButton(action = action,
+                            color = item,
+                            colorToChange = firstRowColorsToChange[id])
+                    }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                        .weight(1f)
-                ){
-                    ColorButton(action = action,
-                        color = Color.Red,
-                        colorToChange = Colors.RED)
-                }
+            }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                        .weight(1f)
-                ){
-                    ColorButton(action = action,
-                        color = Color.Green,
-                        colorToChange = Colors.GREEN)
-                }
+            Row (horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)){
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                        .weight(1f)
-                ){
-                    ColorButton(action = action,
-                        color = Color.Yellow,
-                        colorToChange = Colors.YELLOW)
+                secondRowColors.forEachIndexed{ id, item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ){
+                        ColorButton(action = action,
+                            color = item,
+                            colorToChange = secondRowColorsToChange[id])
+                    }
                 }
 
             }

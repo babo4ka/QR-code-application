@@ -8,4 +8,6 @@
     <string name="title_activity_background_choose">BackgroundChooseActivity</string>
     <string name="title_activity_color_button">ColorButton</string>
     <string name="title_activity_shape_choose_page">ShapeChoosePage</string>
+    <string name="title_activity_logo_choose_page">LogoChoosePage</string>
+    <string name="title_activity_dsa">dsa</string>
 </resources>

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.createQRActivity.pages.colorsAndBackgroundPage.ColorChoosePage
+import com.example.qrcodeapp.createQRActivity.pages.logoChooseActivity.LogoChoosePage
 import com.example.qrcodeapp.createQRActivity.pages.shapePage.ShapeChoosePage
 import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
 import qrcode.QRCode
@@ -79,6 +80,10 @@ fun QRCodeCreator(dataToEncode: String?) {
         mutableStateOf("Круги")
     }
 
+    val qrLogo = remember{
+        mutableStateOf("")
+    }
+
     val qrBuilder = remember {
         mutableStateOf(
             QRCode.ofCircles()
@@ -92,6 +97,7 @@ fun QRCodeCreator(dataToEncode: String?) {
     }
 
     val context = LocalContext.current
+    val assets = context.resources.assets
 
     val headerWeight = 1f
     val contentWeight = 5f
@@ -102,7 +108,6 @@ fun QRCodeCreator(dataToEncode: String?) {
         return bytes?.size?.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
     }
 
-
     fun rebuildQr(){
         var builder: QRCodeBuilder? = null
 
@@ -110,6 +115,16 @@ fun QRCodeCreator(dataToEncode: String?) {
             "Круги"-> builder = QRCode.ofCircles()
             "Квадраты" -> builder = QRCode.ofSquares()
             "Закругленные квадраты" -> builder = QRCode.ofRoundedSquares()
+        }
+
+        if(qrLogo.value != ""){
+            val logoFile = assets.open(qrLogo.value)
+            val byteArray = logoFile.readBytes()
+
+
+            if (builder != null) {
+                builder = builder.withLogo(byteArray, 128, 128, true)
+            }
         }
 
         if (builder != null) {
@@ -279,6 +294,13 @@ fun QRCodeCreator(dataToEncode: String?) {
                             "Форма"->{
                                 ShapeChoosePage {
                                     qrShape.value = it
+                                    rebuildQr()
+                                }
+                            }
+
+                            "Лого"->{
+                                LogoChoosePage{
+                                    qrLogo.value = it
                                     rebuildQr()
                                 }
                             }

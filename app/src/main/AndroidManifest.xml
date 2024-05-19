@@ -13,6 +13,16 @@
         android:theme="@style/Theme.QRCodeApp"
         tools:targetApi="31">
         <activity
+            android:name=".createQRActivity.dsa"
+            android:exported="false"
+            android:label="@string/title_activity_dsa"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
+            android:name=".createQRActivity.pages.logoChooseActivity.LogoChoosePage"
+            android:exported="false"
+            android:label="@string/title_activity_logo_choose_page"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
             android:name=".createQRActivity.pages.shapePage.ShapeChoosePage"
             android:exported="false"
             android:label="@string/title_activity_shape_choose_page"
