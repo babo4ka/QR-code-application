@@ -202,7 +202,9 @@ fun CodeBox(qrCode:ByteArray,
         return  BitmapFactory.decodeByteArray(qrCode, 0, qrCode.size).asImageBitmap()
     }
 
-    Button(modifier = Modifier.shadow(3.dp).padding(3.dp),
+    Button(modifier = Modifier
+        .shadow(3.dp)
+        .padding(3.dp),
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
@@ -224,6 +226,22 @@ fun CodeBox(qrCode:ByteArray,
 
             Text(modifier = Modifier.weight(5f), text = content)
 
+            Button(modifier = Modifier
+                .weight(2f),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.Black
+            ),
+                onClick = {
+                println("qr id: $qrId")
+            }) {
+                Image(modifier = Modifier
+                    .width(15.dp)
+                    .height(15.dp),
+                    painter = painterResource(id = R.drawable.close),
+                    contentDescription = null)
+            }
         }
     }
 
