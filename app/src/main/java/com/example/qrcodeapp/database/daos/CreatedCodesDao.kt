@@ -16,8 +16,8 @@ interface CreatedCodesDao {
     @Update
     fun update(code: CreatedCodes)
 
-    @Delete
-    fun delete(code: CreatedCodes)
+    @Query("DELETE FROM created_codes WHERE id=:id")
+    suspend fun delete(id:Int)
 
     @Query("SELECT * FROM created_codes WHERE id = :id")
     suspend fun getCode(id: Int):CreatedCodes

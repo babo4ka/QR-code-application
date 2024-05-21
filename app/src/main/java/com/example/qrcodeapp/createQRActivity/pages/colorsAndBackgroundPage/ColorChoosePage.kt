@@ -1,5 +1,8 @@
 package com.example.qrcodeapp.createQRActivity.pages.colorsAndBackgroundPage
 
+import android.content.res.AssetManager
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,19 +15,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import qrcode.QRCode
+import qrcode.QRCodeBuilder
 import qrcode.color.Colors
 
 
 @Composable
-fun ColorChoosePage(action: (color:Int)->Unit){
+fun ColorChoosePage(action: (color:Int)->Unit, type:String){
+
+    val context = LocalContext.current
+    val assets = context.resources.assets
 
     val firstRowColors = listOf(Color.Black, Color.Red, Color.Green, Color.Yellow)
     val secondRowColors = listOf(Color.Blue, Color.Magenta, Color.Cyan, Color.White)
@@ -54,7 +66,9 @@ fun ColorChoosePage(action: (color:Int)->Unit){
                     ){
                         ColorButton(action = action,
                             color = item,
-                            colorToChange = firstRowColorsToChange[id])
+                            colorToChange = firstRowColorsToChange[id],
+                            assets = assets,
+                            type = type)
                     }
                 }
 
@@ -75,7 +89,9 @@ fun ColorChoosePage(action: (color:Int)->Unit){
                     ){
                         ColorButton(action = action,
                             color = item,
-                            colorToChange = secondRowColorsToChange[id])
+                            colorToChange = secondRowColorsToChange[id],
+                            assets = assets,
+                            type = type)
                     }
                 }
 
@@ -89,17 +105,31 @@ fun ColorChoosePage(action: (color:Int)->Unit){
 fun ColorButton(
     action: (colorToChange:Int) -> Unit,
     color: Color,
-    colorToChange:Int
+    colorToChange:Int,
+    assets:AssetManager,
+    type:String
 ) {
+
+    val logoFile = assets.open("qr_icon.png")
+    val byteArray = logoFile.readBytes()
+    val logoImg = BitmapFactory
+        .decodeByteArray(byteArray, 0, byteArray.size)
+        .asImageBitmap()
+
     Button(modifier = Modifier
         .shadow(1.dp)
         .fillMaxSize(),
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = color
+            containerColor = if(type == "content") Color.Transparent else color,
+            contentColor = color
         ),
         onClick = { action(colorToChange) }) {
 
+        if(type == "content"){
+            Icon(modifier = Modifier.fillMaxSize(),
+                bitmap = logoImg, contentDescription = null)
+        }
     }
 
 }
@@ -107,5 +137,5 @@ fun ColorButton(
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun ColorChoosePagePreview(){
-    ColorChoosePage(action = {})
+    ColorChoosePage(action = {}, type = "content")
 }

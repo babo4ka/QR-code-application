@@ -95,6 +95,12 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
             CurrentDataHandler.getActiveUser()?.userLogin?.let { ccvm?.getAllCodes(it) }
     }
 
+    suspend fun deleteCode(id:Int){
+        ccvm?.deleteCode(id)
+        createdCodes.value =
+            CurrentDataHandler.getActiveUser()?.userLogin?.let { ccvm?.getAllCodes(it) }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -183,7 +189,12 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                     }
                 }else{
                     createdCodes.value?.forEach { item ->
-                        CodeBox(qrCode = item.code, content = item.content, qrId = item.id)
+                        CodeBox(qrCode = item.code, content = item.content, qrId = item.id,
+                            deleteAction = {
+                                scope.launch {
+                                    deleteCode(item.id)
+                                }
+                            })
                     }
                 }
             }
@@ -194,9 +205,12 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
 @Composable
 fun CodeBox(qrCode:ByteArray,
             content:String,
-            qrId:Int){
+            qrId:Int,
+            deleteAction:()->Unit){
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
 
     fun qrCode(): ImageBitmap {
         return  BitmapFactory.decodeByteArray(qrCode, 0, qrCode.size).asImageBitmap()
@@ -234,7 +248,9 @@ fun CodeBox(qrCode:ByteArray,
                 contentColor = Color.Black
             ),
                 onClick = {
-                println("qr id: $qrId")
+                scope.launch {
+                    deleteAction()
+                }
             }) {
                 Image(modifier = Modifier
                     .width(15.dp)

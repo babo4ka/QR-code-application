@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
 import com.example.qrcodeapp.createQRActivity.QrType
@@ -33,7 +34,7 @@ fun Reminder() {
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        Text(text = "Вы не авторизированы!")
+        Text(text = "Вы не авторизированы!", fontSize = 10.sp)
         Button(
             onClick = {
                 CurrentDataHandler.setMainActivityPage(Page.ACCOUNT)
@@ -45,7 +46,7 @@ fun Reminder() {
                 contentColor = Color.Blue
             )
         ) {
-            Text(text = "Вход/Регистрация")
+            Text(text = "Вход/Регистрация", fontSize = 10.sp)
         }
     }
 }

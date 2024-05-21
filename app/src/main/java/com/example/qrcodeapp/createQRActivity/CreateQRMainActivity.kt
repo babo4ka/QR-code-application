@@ -76,7 +76,7 @@ fun CreateQRActivityPage() {
     val context = LocalContext.current
 
     val headerWeight = 1f
-    val contentWeight = 7f
+    val contentWeight = 6f
     val footerWeight = 3f
 
     val activeButton = remember {
@@ -107,8 +107,8 @@ fun CreateQRActivityPage() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .weight(headerWeight)
+                    .height(35.dp)
+                    //.weight(headerWeight)
 
             ) {
                 Button(

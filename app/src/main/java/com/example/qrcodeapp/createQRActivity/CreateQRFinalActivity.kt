@@ -1,8 +1,10 @@
 package com.example.qrcodeapp.createQRActivity
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,6 +54,8 @@ import com.example.qrcodeapp.mainActivity.Page
 import qrcode.QRCode
 import qrcode.QRCodeBuilder
 import qrcode.color.Colors
+import java.io.File
+import java.io.FileOutputStream
 
 class CreateQRFinalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,15 +73,29 @@ class CreateQRFinalActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QRCodeCreator(ccvm = ccvm)
+                    QRCodeCreator(ccvm = ccvm){
+                        saveQrCodeToFiles(it)
+                    }
                 }
             }
         }
     }
+
+    fun saveQrCodeToFiles(content:Bitmap?){
+
+        val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
+        dir.mkdirs()
+        val file = File(dir, "qr.jpg")
+        val fos = FileOutputStream(file)
+        content?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+
+        fos.flush()
+        fos.close()
+    }
 }
 
 @Composable
-fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
+fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->Unit) {
 
     val qrColor = remember {
         mutableStateOf(Colors.WHITE)
@@ -112,16 +130,28 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
 
 
     val headerWeight = 1f
-    val contentWeight = 5f
-    val footerWeight = 3f
+    val contentWeight = 12f
+    val footerWeight = 5f
 
     fun qrToBytes(): ByteArray {
-        return qrBuilder.value.build(CurrentDataHandler.getTextEntered()).render().getBytes()
+        var text = CurrentDataHandler.getTextEntered()
+        when(CurrentDataHandler.getQrTypeChoosed()){
+            QrType.LINK -> text = "https://$text"
+            QrType.TG -> text = "https://t.me/$text"
+            else -> {}
+        }
+
+        return qrBuilder.value.build(text).render().getBytes()
     }
 
     fun qrCode(): ImageBitmap {
         val bytes = qrToBytes()
         return bytes.size.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
+    }
+
+    fun saveQrToFiles(){
+        val bytes = qrToBytes()
+        saveQrToFilesAction(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
     }
 
     fun saveQrCodeToDb() {
@@ -181,8 +211,8 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .weight(headerWeight)
+                    .height(35.dp)
+                    //.weight(headerWeight)
 
             ) {
                 Button(
@@ -212,7 +242,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                 ) {
                     Text(
                         text = "Создать",
-                        fontSize = 20.sp
+                        fontSize = 15.sp
                     )
                 }
 
@@ -221,6 +251,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                 Button(
                     onClick = {
                         saveQrCodeToDb()
+                        saveQrToFiles()
                         CurrentDataHandler.setTextEntered("")
                         CurrentDataHandler.setQrTypeChoosed(QrType.TEXT)
                         CurrentDataHandler.setMainActivityPage(Page.MAIN)
@@ -233,11 +264,11 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                     ),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Сохранить")
+                    Text(text = "Сохранить", fontSize = 13.sp)
                 }
             }
 
-            Box(
+            Row(horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(contentWeight)
@@ -261,7 +292,8 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .height(35.dp)
+                            //.weight(1f)
                     ) {
                         Box(
                             modifier = Modifier
@@ -319,17 +351,20 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?) {
                     Box(modifier = Modifier.weight(4f)) {
                         when (activeCustomizeOption.value) {
                             "Цвет" -> {
-                                ColorChoosePage {
-                                    qrColor.value = it
-                                    rebuildQr()
-                                }
+                                ColorChoosePage(type="content",
+                                    action = {
+                                        qrColor.value = it
+                                        rebuildQr()
+                                    })
                             }
 
                             "Фон" -> {
-                                ColorChoosePage {
-                                    qrBackColor.value = it
-                                    rebuildQr()
-                                }
+                                ColorChoosePage(type="back",
+                                    action = {
+                                        qrBackColor.value = it
+                                        rebuildQr()
+                                    }
+                                )
                             }
 
                             "Форма" -> {
@@ -380,6 +415,8 @@ fun ChooseOptionToCustomizeBtn(
 @Composable
 fun CreatorPreview() {
     QRCodeAppTheme {
-        QRCodeCreator(ccvm = null)
+        QRCodeCreator(ccvm = null){
+
+        }
     }
 }

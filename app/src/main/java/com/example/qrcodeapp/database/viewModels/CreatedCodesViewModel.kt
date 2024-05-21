@@ -34,6 +34,13 @@ class CreatedCodesViewModel(val dao: CreatedCodesDao): ViewModel() {
         }
 
         return res.await()
+    }
 
+    suspend fun deleteCode(id:Int){
+        val res = viewModelScope.async {
+            dao.delete(id)
+        }
+
+        res.await()
     }
 }
