@@ -3,6 +3,7 @@ package com.example.qrcodeapp.createQRActivity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.widget.Toast
@@ -38,6 +39,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.Reminder
@@ -66,6 +69,8 @@ class CreateQRFinalActivity : ComponentActivity() {
         val viewModelFactory = CreatedCodesViewModelFactory(dao)
         val ccvm = ViewModelProvider(this, viewModelFactory).get(CreatedCodesViewModel::class.java)
 
+
+
         setContent {
             QRCodeAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -81,6 +86,7 @@ class CreateQRFinalActivity : ComponentActivity() {
         }
     }
 
+
     fun saveQrCodeToFiles(content:Bitmap?){
 
         val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
@@ -92,6 +98,7 @@ class CreateQRFinalActivity : ComponentActivity() {
         fos.flush()
         fos.close()
     }
+
 }
 
 @Composable
@@ -192,6 +199,29 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         }
     }
 
+    fun getContentUri(): Uri?{
+        val bytes = qrToBytes()
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+        val imgsFolder = File(context.cacheDir, "imgs")
+
+        var contentUri:Uri? = null
+
+        imgsFolder.mkdirs()
+
+        val file = File(imgsFolder, "shared_image.png")
+        val fos = FileOutputStream(file)
+
+        bitmap.compress(Bitmap.CompressFormat.PNG, 50, fos)
+        fos.flush()
+        fos.close()
+        contentUri = FileProvider.getUriForFile(context, "com.example.qrcodeapp.fileprovider", file)
+
+        return contentUri
+    }
+
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -247,6 +277,25 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                 }
 
                 //Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = {
+                        val contentUri = getContentUri()
+                        val intent= Intent()
+                        intent.action=Intent.ACTION_SEND
+                        intent.putExtra(Intent.EXTRA_STREAM,contentUri)
+                        intent.type="image/png"
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        startActivity(context, Intent.createChooser(intent,"Share To:"), null)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.Black,
+                        containerColor = Color.Green
+                    ),
+                    modifier = Modifier.weight(2f)
+                ) {
+                    Text(text = "share", fontSize = 13.sp)
+                }
 
                 Button(
                     onClick = {
