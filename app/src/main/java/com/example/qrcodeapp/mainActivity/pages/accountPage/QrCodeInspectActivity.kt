@@ -2,8 +2,10 @@ package com.example.qrcodeapp.mainActivity.pages.accountPage
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -45,6 +47,8 @@ import com.example.qrcodeapp.database.viewModels.CreatedCodesViewModel
 import com.example.qrcodeapp.database.viewModels.factories.CreatedCodesViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.ui.theme.QRCodeAppTheme
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class QrCodeInspectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,16 +68,35 @@ class QrCodeInspectActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QrCodeInspect(qrCodeId = qrCodeId, ccvm = ccvm)
+                    QrCodeInspect(qrCodeId = qrCodeId, ccvm = ccvm) {
+                        saveQrCodeToFiles(it)
+                    }
                 }
             }
         }
+
+    }
+
+    fun saveQrCodeToFiles(content: Bitmap?) {
+
+        val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
+        dir.mkdirs()
+        val file = File(dir, "qr.jpg")
+        val fos = FileOutputStream(file)
+        content?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+
+        fos.flush()
+        fos.close()
     }
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun QrCodeInspect(qrCodeId: Int, ccvm: CreatedCodesViewModel?) {
+fun QrCodeInspect(
+    qrCodeId: Int,
+    ccvm: CreatedCodesViewModel?,
+    saveQrToFilesAction: (Bitmap?) -> Unit
+) {
     println("code id $qrCodeId")
     println("vm $ccvm")
     val headerWeight = 1f
@@ -101,6 +124,11 @@ fun QrCodeInspect(qrCodeId: Int, ccvm: CreatedCodesViewModel?) {
             BitmapFactory.decodeByteArray(bytes, 0, it)
                 .asImageBitmap()
         }
+    }
+
+    fun saveQrToFiles() {
+        val bytes = qrCodeObj.value?.code
+        saveQrToFilesAction(bytes?.size?.let { BitmapFactory.decodeByteArray(bytes, 0, it) })
     }
 
     Box(
@@ -153,18 +181,24 @@ fun QrCodeInspect(qrCodeId: Int, ccvm: CreatedCodesViewModel?) {
             }
 
             qrCodeObj.value?.content?.let {
-                Text(modifier = Modifier.weight(footerWeight),
-                    text = it)
+                Text(
+                    modifier = Modifier.weight(footerWeight),
+                    text = it
+                )
             }
 
             Button(colors = ButtonDefaults.buttonColors(
                 contentColor = Color.Black,
                 containerColor = Color.Green
             ),
-                onClick = { /*TODO*/ }) {
+                onClick = {
+                    saveQrToFiles()
+                }) {
 
-                Text(text = "Сохранить на устройстве",
-                    fontSize = 20.sp)
+                Text(
+                    text = "Сохранить на устройстве",
+                    fontSize = 20.sp
+                )
             }
         }
     }
@@ -175,6 +209,8 @@ fun QrCodeInspect(qrCodeId: Int, ccvm: CreatedCodesViewModel?) {
 @Composable
 fun QrCodeInspectPreview() {
     QRCodeAppTheme {
-        QrCodeInspect(-1, null)
+        QrCodeInspect(-1, null) {
+
+        }
     }
 }

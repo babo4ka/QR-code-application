@@ -3,6 +3,7 @@ package com.example.qrcodeapp.mainActivity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,8 +72,16 @@ fun MainActivityPage(uvm:UserViewModel?) {
         mutableStateOf(CurrentDataHandler.getMainActivityPage())
     }
 
+    fun pageName():String{
+        return when(page.value){
+            Page.MAIN -> "главная"
+            Page.SCANNER -> "сканер"
+            Page.ACCOUNT -> "аккаунт"
+        }
+    }
+
     val active = remember {
-        mutableStateOf("главная")
+        mutableStateOf(pageName())
     }
 
     Box(

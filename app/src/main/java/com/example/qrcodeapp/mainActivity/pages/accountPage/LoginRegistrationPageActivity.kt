@@ -2,6 +2,7 @@ package com.example.qrcodeapp.mainActivity.pages.accountPage
 
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -61,7 +63,7 @@ fun LoginRegistrationPage(modifier: Modifier,
         ) {
 
 
-            val tabs = listOf("Log in", "Registration")
+            val tabs = listOf("Вход", "Регистрация")
             var tabIndex by remember { mutableIntStateOf(0) }
 
             TabRow(
@@ -314,6 +316,14 @@ fun InputField(
     keyboardOptions: KeyboardOptions
 ) {
     OutlinedTextField(
+//        colors = TextFieldDefaults.colors(
+//            unfocusedLabelColor = Color.White,
+//            focusedTextColor = Color.White,
+//            focusedPlaceholderColor = Color.White,
+//            focusedLabelColor = Color.White,
+//            unfocusedContainerColor = Color.DarkGray,
+//            focusedContainerColor = Color.DarkGray
+//        ),
         keyboardOptions = keyboardOptions,
         value = value,
         onValueChange = { onValChange(it.take(18)) },

@@ -236,7 +236,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
 
                 Box(
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(2f)
                         .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
@@ -262,7 +262,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                         contentColor = Color.Black,
                         containerColor = Color.Green
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(2f)
                 ) {
                     Text(text = "Сохранить", fontSize = 13.sp)
                 }
