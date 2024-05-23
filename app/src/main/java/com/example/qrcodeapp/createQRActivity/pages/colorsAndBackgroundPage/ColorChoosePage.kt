@@ -68,7 +68,8 @@ fun ColorChoosePage(action: (color:Int)->Unit, type:String){
                             color = item,
                             colorToChange = firstRowColorsToChange[id],
                             assets = assets,
-                            type = type)
+                            type = type,
+                            enabled = true)
                     }
                 }
 
@@ -91,7 +92,8 @@ fun ColorChoosePage(action: (color:Int)->Unit, type:String){
                             color = item,
                             colorToChange = secondRowColorsToChange[id],
                             assets = assets,
-                            type = type)
+                            type = type,
+                            enabled = id<2)
                     }
                 }
 
@@ -107,7 +109,8 @@ fun ColorButton(
     color: Color,
     colorToChange:Int,
     assets:AssetManager,
-    type:String
+    type:String,
+    enabled:Boolean
 ) {
 
     val logoFile = assets.open("qr_icon.png")
@@ -119,6 +122,7 @@ fun ColorButton(
     Button(modifier = Modifier
         .shadow(1.dp)
         .fillMaxSize(),
+        enabled = enabled,
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = if(type == "content") Color.Transparent else color,

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import androidx.activity.ComponentActivity
@@ -39,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.database.databases.QrDatabase
@@ -131,6 +133,29 @@ fun QrCodeInspect(
         saveQrToFilesAction(bytes?.size?.let { BitmapFactory.decodeByteArray(bytes, 0, it) })
     }
 
+    fun getContentUri(): Uri?{
+        val bytes = qrCodeObj.value?.code
+        val bitmap = bytes?.let { BitmapFactory.decodeByteArray(bytes, 0, it.size) }
+
+        val imgsFolder = File(context.cacheDir, "imgs")
+
+        var contentUri: Uri? = null
+
+        imgsFolder.mkdirs()
+
+        val file = File(imgsFolder, "shared_image.png")
+        val fos = FileOutputStream(file)
+
+        if (bitmap != null) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 50, fos)
+        }
+        fos.flush()
+        fos.close()
+        contentUri = FileProvider.getUriForFile(context, "com.example.qrcodeapp.fileprovider", file)
+
+        return contentUri
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -187,18 +212,50 @@ fun QrCodeInspect(
                 )
             }
 
-            Button(colors = ButtonDefaults.buttonColors(
-                contentColor = Color.Black,
-                containerColor = Color.Green
-            ),
-                onClick = {
-                    saveQrToFiles()
-                }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)) {
+                Button(colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.Black,
+                    containerColor = Color.Green
+                ),
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        saveQrToFiles()
+                    }) {
 
-                Text(
-                    text = "Сохранить на устройстве",
-                    fontSize = 20.sp
-                )
+                    Text(
+                        text = "Сохранить",
+                        fontSize = 20.sp
+                    )
+                }
+
+                Button(colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.Black,
+                    containerColor = Color.Green
+                ),modifier = Modifier.weight(1f),
+
+                    onClick = {
+                        val contentUri = getContentUri()
+                        val intent= Intent()
+                        intent.action=Intent.ACTION_SEND
+                        intent.putExtra(Intent.EXTRA_STREAM,contentUri)
+                        intent.type="image/png"
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        ContextCompat.startActivity(
+                            context,
+                            Intent.createChooser(intent, "Share To:"),
+                            null
+                        )
+                    }) {
+
+                    Text(
+                        text = "Поделиться",
+                        fontSize = 20.sp
+                    )
+                }
             }
         }
     }

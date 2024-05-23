@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -38,7 +39,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
@@ -88,7 +88,6 @@ class CreateQRFinalActivity : ComponentActivity() {
 
 
     fun saveQrCodeToFiles(content:Bitmap?){
-
         val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
         dir.mkdirs()
         val file = File(dir, "qr.jpg")
@@ -103,6 +102,9 @@ class CreateQRFinalActivity : ComponentActivity() {
 
 @Composable
 fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->Unit) {
+
+    val context = LocalContext.current
+    val assets = context.resources.assets
 
     val qrColor = remember {
         mutableStateOf(Colors.WHITE)
@@ -120,11 +122,16 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         mutableStateOf("")
     }
 
+    val defaultLogoFile = assets.open("app_logo.png")
+    val defaultLogoByteArray = defaultLogoFile.readBytes()
+
     val qrBuilder = remember {
         mutableStateOf(
             QRCode.ofCircles()
+                .withSize(15)
                 .withBackgroundColor(Colors.BLACK)
                 .withColor(qrColor.value)
+                .withLogo(defaultLogoByteArray, 128, 128, true)
         )
     }
 
@@ -132,23 +139,21 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         mutableStateOf("Цвет")
     }
 
-    val context = LocalContext.current
-    val assets = context.resources.assets
-
 
     val headerWeight = 1f
     val contentWeight = 12f
     val footerWeight = 5f
 
+
     fun qrToBytes(): ByteArray {
-        var text = CurrentDataHandler.getTextEntered()
-        when(CurrentDataHandler.getQrTypeChoosed()){
-            QrType.LINK -> text = "https://$text"
-            QrType.TG -> text = "https://t.me/$text"
-            else -> {}
+        val text = when(CurrentDataHandler.getQrTypeChoosed()){
+            QrType.TEXT -> CurrentDataHandler.getTextEntered()
+            QrType.LINK -> "https://${CurrentDataHandler.getTextEntered()}"
+            QrType.TG -> "https://t.me/${CurrentDataHandler.getTextEntered()}"
+            else -> ({}).toString()
         }
 
-        return qrBuilder.value.build(text).render().getBytes()
+        return qrBuilder.value.build("text").render().getBytes()
     }
 
     fun qrCode(): ImageBitmap {
@@ -189,6 +194,10 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
 
             if (builder != null) {
                 builder = builder.withLogo(byteArray, 128, 128, true)
+            }
+        }else{
+            if (builder != null) {
+                builder = builder.withLogo(defaultLogoByteArray, 128, 128, true)
             }
         }
 
@@ -248,7 +257,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                 Button(
                     onClick = {
                         val intent = Intent(context, CreateQRMainActivity::class.java)
-                        ContextCompat.startActivity(context, intent, null)
+                        startActivity(context, intent, null)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -289,12 +298,14 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                         startActivity(context, Intent.createChooser(intent,"Share To:"), null)
                     },
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color.Green
-                    ),
-                    modifier = Modifier.weight(2f)
+                        containerColor = Color.Transparent
+                    )
                 ) {
-                    Text(text = "share", fontSize = 13.sp)
+                    Image(modifier = Modifier
+                        .width(20.dp)
+                        .height(20.dp),
+                        painter = painterResource(id = R.drawable.share),
+                        contentDescription = null)
                 }
 
                 Button(
@@ -305,7 +316,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                         CurrentDataHandler.setQrTypeChoosed(QrType.TEXT)
                         CurrentDataHandler.setMainActivityPage(Page.MAIN)
                         val intent = Intent(context, MainActivity::class.java)
-                        ContextCompat.startActivity(context, intent, null)
+                        startActivity(context, intent, null)
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.Black,

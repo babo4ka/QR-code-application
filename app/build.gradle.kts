@@ -49,7 +49,9 @@ android {
         }
     }
 
+
 }
+
 
 
 
@@ -83,4 +85,5 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
     implementation("com.google.zxing:core:3.4.0")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

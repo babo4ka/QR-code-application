@@ -26,9 +26,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.qrcodeapp.createQRActivity.pages.logoChooseActivity.ui.theme.QRCodeAppTheme
+import com.example.qrcodeapp.database.CurrentDataHandler
 
 
 @Composable
@@ -50,75 +52,83 @@ fun LogoChoosePage(action: (String) -> Unit) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-
-            ) {
-                Box(
+            if(CurrentDataHandler.getActiveUser() != null){
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .fillMaxHeight()
                         .fillMaxWidth()
-                        .weight(1f)
+                        .height(50.dp)
+
                 ) {
-                    NoLogoButton(
-                        action = {
-                            action("")
-                            activeLogo.value = ""
-                        },
-                        active = activeLogo.value
-                    )
-                }
-
-                upRow.forEach{ item ->
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
                             .fillMaxWidth()
                             .weight(1f)
                     ) {
-                        LogoButton(
+                        NoLogoButton(
                             action = {
-                                action(item)
-                                activeLogo.value = item
+                                action("")
+                                activeLogo.value = ""
                             },
-                            logoName = item,
-                            active = activeLogo.value,
-                            assets = assets
+                            active = activeLogo.value
                         )
                     }
+
+                    upRow.forEach{ item ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            LogoButton(
+                                action = {
+                                    action(item)
+                                    activeLogo.value = item
+                                },
+                                logoName = item,
+                                active = activeLogo.value,
+                                assets = assets
+                            )
+                        }
+                    }
                 }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    downRow.forEach { item ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            LogoButton(
+                                action = {
+                                    action(item)
+                                    activeLogo.value = item
+                                },
+                                logoName = item,
+                                active = activeLogo.value,
+                                assets = assets
+                            )
+                        }
+                    }
+                }
+            }else{
+                Text(modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    text = "Выбирать логотип могут только авторизированные пользователи. " +
+                        "Без авторизации всегда будет использоваться логотип приложения.")
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                downRow.forEach { item ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        LogoButton(
-                            action = {
-                                action(item)
-                                activeLogo.value = item
-                            },
-                            logoName = item,
-                            active = activeLogo.value,
-                            assets = assets
-                        )
-                    }
-                }
-            }
         }
 
     }

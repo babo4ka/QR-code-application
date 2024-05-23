@@ -14,4 +14,5 @@
     <string name="title_activity_reminder">ReminderActivity</string>
     <string name="title_activity_created_codes">CreatedCodesActivity</string>
     <string name="title_activity_qr_code_inspect">QrCodeInspectActivity</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
 </resources>

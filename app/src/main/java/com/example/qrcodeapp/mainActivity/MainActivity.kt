@@ -1,6 +1,7 @@
 package com.example.qrcodeapp.mainActivity
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -40,15 +41,31 @@ import com.example.qrcodeapp.database.viewModels.UserViewModel
 import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
 import com.example.qrcodeapp.mainActivity.pages.mainPage.MainPage
+import com.example.qrcodeapp.mainActivity.pages.scanPage.ScannerPage
 import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
+import com.google.zxing.qrcode.QRCodeWriter
+import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 class MainActivity : ComponentActivity() {
+
+    private val scanLauncher = registerForActivityResult(ScanContract()){
+            result ->
+        if(result.contents == null){
+
+        }else{
+            Toast.makeText(this, "data: ${result.contents}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val dao = QrDatabase.getInstance(application).userDao
         val viewModelFactory = UserViewModelFactory(dao)
         val uvm = ViewModelProvider(this, viewModelFactory).get(UserViewModel::class.java)
+
 
         setContent {
             QRCodeAppTheme {
@@ -57,16 +74,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainActivityPage(uvm = uvm)
+                    MainActivityPage(uvm = uvm, scanAction = {
+                        scan()
+                    })
                 }
             }
         }
+    }
+
+    private fun scan(){
+        scanLauncher.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES))
     }
 }
 
 
 @Composable
-fun MainActivityPage(uvm:UserViewModel?) {
+fun MainActivityPage(uvm:UserViewModel?, scanAction:()->Unit) {
 
     val page = remember {
         mutableStateOf(CurrentDataHandler.getMainActivityPage())
@@ -76,7 +99,7 @@ fun MainActivityPage(uvm:UserViewModel?) {
         return when(page.value){
             Page.MAIN -> "главная"
             Page.SCANNER -> "сканер"
-            Page.ACCOUNT -> "аккаунт"
+            Page.ACCOUNT -> "кабинет"
         }
     }
 
@@ -97,12 +120,16 @@ fun MainActivityPage(uvm:UserViewModel?) {
             when (page.value) {
                 Page.MAIN -> {
                     MainPage(modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
+                        .fillMaxSize()
+                        .weight(1f)
                     )
                 }
 
-                Page.SCANNER -> TODO()
+                Page.SCANNER -> {
+                    ScannerPage {
+                        scanAction()
+                    }
+                }
                 Page.ACCOUNT -> {
                     AccountPage(
                         modifier = Modifier
@@ -208,6 +235,8 @@ fun MenuButton(
 @Composable
 fun MainActivityPreview() {
     QRCodeAppTheme {
-        MainActivityPage(null)
+        MainActivityPage(null){
+
+        }
     }
 }
