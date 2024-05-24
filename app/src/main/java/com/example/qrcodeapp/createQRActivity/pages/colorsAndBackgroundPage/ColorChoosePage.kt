@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,12 +39,14 @@ fun ColorChoosePage(action: (color:Int)->Unit, type:String){
     val context = LocalContext.current
     val assets = context.resources.assets
 
-    val firstRowColors = listOf(Color.Black, Color.Red, Color.Green, Color.Yellow)
-    val secondRowColors = listOf(Color.Blue, Color.Magenta, Color.Cyan, Color.White)
+    val firstRowColors = listOf(Color(Colors.BLACK), Color(Colors.RED), Color(Colors.GREEN), Color(Colors.YELLOW))
+    val secondRowColors = listOf(Color(Colors.BLUE), Color(Colors.MAGENTA), Color(Colors.CYAN), Color(Colors.WHITE))
+    val thirdRowColors = listOf(Color(Colors.ORANGE), Color(Colors.DEEP_PINK), Color(Colors.DODGER_BLUE))
+
 
     val firstRowColorsToChange = listOf(Colors.BLACK, Colors.RED, Colors.GREEN, Colors.YELLOW)
     val secondRowColorsToChange = listOf(Colors.BLUE, Colors.MAGENTA, Colors.CYAN, Colors.WHITE)
-
+    val thirdRowColorsToChange = listOf(Colors.ORANGE, Colors.DEEP_PINK, Colors.DODGER_BLUE)
 
     Box(modifier = Modifier.fillMaxSize()){
         Column(
@@ -93,9 +96,38 @@ fun ColorChoosePage(action: (color:Int)->Unit, type:String){
                             colorToChange = secondRowColorsToChange[id],
                             assets = assets,
                             type = type,
-                            enabled = id<2)
+                            enabled = true)
                     }
                 }
+
+            }
+
+            Row (horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)){
+
+                thirdRowColors.forEachIndexed{ id, item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ){
+                        ColorButton(action = action,
+                            color = item,
+                            colorToChange = thirdRowColorsToChange[id],
+                            assets = assets,
+                            type = type,
+                            enabled = true)
+                    }
+                }
+
+                Spacer(modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .weight(1f))
 
             }
 
@@ -125,7 +157,7 @@ fun ColorButton(
         enabled = enabled,
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if(type == "content") Color.Transparent else color,
+            containerColor = if(type == "content") Color(Colors.LIGHT_GRAY) else color,
             contentColor = color
         ),
         onClick = { action(colorToChange) }) {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,8 +43,9 @@ fun LogoChoosePage(action: (String) -> Unit) {
         mutableStateOf("")
     }
 
-    val upRow = listOf("telegram.png", "minecraft.png", "apple.png")
-    val downRow = listOf("youtube.png", "github.png", "android.png", "student.png")
+    val firstRow = listOf("telegram.png", "minecraft.png", "apple.png")
+    val secondRow = listOf("burger.png", "music.png", "android.png", "student.png")
+    val thirdRow = listOf("pinterest.png", "steam.png")
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -76,7 +78,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         )
                     }
 
-                    upRow.forEach{ item ->
+                    firstRow.forEach{ item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -103,7 +105,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
-                    downRow.forEach { item ->
+                    secondRow.forEach { item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -121,6 +123,42 @@ fun LogoChoosePage(action: (String) -> Unit) {
                             )
                         }
                     }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    thirdRow.forEach { item ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            LogoButton(
+                                action = {
+                                    action(item)
+                                    activeLogo.value = item
+                                },
+                                logoName = item,
+                                active = activeLogo.value,
+                                assets = assets
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f))
+                    Spacer(modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f))
                 }
             }else{
                 Text(modifier = Modifier.fillMaxWidth(),
