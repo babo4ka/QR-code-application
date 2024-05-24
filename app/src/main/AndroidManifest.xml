@@ -16,10 +16,16 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.QRCodeApp"
         tools:targetApi="31">
+        <activity
+            android:name=".widget.creator.QrWidget"
+            android:exported="false"
+            android:label="@string/title_activity_qr_creator_widget"
+            android:theme="@style/Theme.QRCodeApp" />
         <activity
             android:name=".mainActivity.pages.accountPage.ScannedQrCodeInspectActivity"
             android:exported="false"
@@ -121,6 +127,18 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/files_path" />
         </provider>
+
+        <receiver
+            android:name=".widget.creator.QrWidgetReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_meta" />
+        </receiver>
     </application>
 
 </manifest>
