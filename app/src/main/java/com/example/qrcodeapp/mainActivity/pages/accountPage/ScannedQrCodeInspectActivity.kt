@@ -35,10 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
+import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.databases.QrDatabase
 import com.example.qrcodeapp.database.entities.ScannedCodes
 import com.example.qrcodeapp.database.viewModels.ScannedCodesViewModel
 import com.example.qrcodeapp.database.viewModels.factories.ScannedCodesViewModelFactory
+import com.example.qrcodeapp.mainActivity.MainActivity
+import com.example.qrcodeapp.mainActivity.Page
 import com.example.qrcodeapp.mainActivity.pages.accountPage.ui.theme.QRCodeAppTheme
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -49,6 +52,9 @@ class ScannedQrCodeInspectActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val qrCodeId = intent.getIntExtra("qrCodeId", -1)
+        val fromDb = intent.getBooleanExtra("fromDb", true)
+        val content = intent.getStringExtra("content")
+        val date = intent.getStringExtra("date")
 
         val dao = QrDatabase.getInstance(application).scannedCodesDao
         val viewModelFactory = ScannedCodesViewModelFactory(dao)
@@ -61,7 +67,14 @@ class ScannedQrCodeInspectActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScannedQrCodeInspect(qrCodeId = qrCodeId, scvm = scvm)
+                    if(fromDb)
+                        ScannedQrCodeInspect(qrCodeId = qrCodeId, scvm = scvm)
+                    else
+                        if (date != null) {
+                            if (content != null) {
+                                ScannedQrCodeInspectNoDb(content = content, date = Date(date.toLong()))
+                            }
+                        }
                 }
             }
         }
@@ -139,8 +152,15 @@ fun ScannedQrCodeInspect(
             ) {
                 Button(
                     onClick = {
-                        val intent = Intent(context, ScannedCodesActivity::class.java)
-                        ContextCompat.startActivity(context, intent, null)
+                        if(CurrentDataHandler.getActiveUser() != null){
+                            val intent = Intent(context, ScannedCodesActivity::class.java)
+                            ContextCompat.startActivity(context, intent, null)
+                        }else{
+                            CurrentDataHandler.setMainActivityPage(Page.SCANNER)
+                            val intent = Intent(context, MainActivity::class.java)
+                            ContextCompat.startActivity(context, intent, null)
+                        }
+
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -162,6 +182,89 @@ fun ScannedQrCodeInspect(
             qrCodeObj.value?.let {
                 ContentBox(sc = it, modifier = Modifier.weight(footerWeight))
             }
+
+
+        }
+    }
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun ScannedQrCodeInspectNoDb(date:Date, content:String) {
+    val headerWeight = 1f
+    val footerWeight = 10f
+
+    val context = LocalContext.current
+
+
+
+    @SuppressLint("SimpleDateFormat")
+    @Composable
+    fun ContentBox(content:String, date: Date, modifier:Modifier){
+        val format = SimpleDateFormat("dd.MM.yyyy HH:mm")
+
+        val dateStr = date?.let { format.format(it) }
+
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp),
+            horizontalAlignment = Alignment.Start,
+            modifier = modifier.fillMaxSize()){
+            Text(textAlign = TextAlign.Left,
+                //modifier = modifier,
+                text = "Дата сканирования:\n ${dateStr}"
+            )
+
+                Text(textAlign = TextAlign.Left,
+                    //modifier = modifier,
+                    text = "Содержимое: \n $content"
+                )
+
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(5.dp)
+    ) {
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .weight(headerWeight)
+
+            ) {
+                Button(
+                    onClick = {
+                        val intent = Intent(context, ScannedCodesActivity::class.java)
+                        ContextCompat.startActivity(context, intent, null)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.Black
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = null
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(4f))
+            }
+
+
+            ContentBox(modifier = Modifier.weight(footerWeight), date = date, content= content)
 
 
         }

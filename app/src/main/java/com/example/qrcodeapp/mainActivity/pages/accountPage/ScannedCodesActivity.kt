@@ -222,6 +222,7 @@ fun CodeBox(content:String,
         onClick = {
             val intent = Intent(context, ScannedQrCodeInspectActivity::class.java)
             intent.putExtra("qrCodeId", qrId)
+            intent.putExtra("fromDb", true)
             ContextCompat.startActivity(context, intent, null)
         }) {
         Row(horizontalArrangement = Arrangement.spacedBy(15.dp),

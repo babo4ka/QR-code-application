@@ -1,5 +1,6 @@
 package com.example.qrcodeapp.mainActivity
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.database.CurrentDataHandler
@@ -42,6 +44,8 @@ import com.example.qrcodeapp.database.viewModels.UserViewModel
 import com.example.qrcodeapp.database.viewModels.factories.ScannedCodesViewModelFactory
 import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
+import com.example.qrcodeapp.mainActivity.pages.accountPage.CreatedQrCodeInspectActivity
+import com.example.qrcodeapp.mainActivity.pages.accountPage.ScannedQrCodeInspectActivity
 import com.example.qrcodeapp.mainActivity.pages.mainPage.MainPage
 import com.example.qrcodeapp.mainActivity.pages.scanPage.ScannerPage
 import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
@@ -75,7 +79,11 @@ class MainActivity : ComponentActivity() {
                 CurrentDataHandler.getActiveUser()
                     ?.let { scvm.addCode(it.userLogin, result.contents, date) }
 
-                Toast.makeText(this, "data: ${result.contents}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, ScannedQrCodeInspectActivity::class.java)
+                intent.putExtra("fromDb", false)
+                intent.putExtra("content", result.contents)
+                intent.putExtra("date", date)
+                ContextCompat.startActivity(this, intent, null)
             }
         }
 
