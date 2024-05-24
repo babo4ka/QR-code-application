@@ -2,7 +2,6 @@ package com.example.qrcodeapp.mainActivity.pages.accountPage
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,9 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,24 +40,23 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
-import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
 import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.databases.QrDatabase
-import com.example.qrcodeapp.database.entities.CreatedCodes
-import com.example.qrcodeapp.database.viewModels.CreatedCodesViewModel
-import com.example.qrcodeapp.database.viewModels.factories.CreatedCodesViewModelFactory
+import com.example.qrcodeapp.database.entities.ScannedCodes
+import com.example.qrcodeapp.database.viewModels.ScannedCodesViewModel
+import com.example.qrcodeapp.database.viewModels.factories.ScannedCodesViewModelFactory
 import com.example.qrcodeapp.mainActivity.MainActivity
 import com.example.qrcodeapp.mainActivity.Page
 import com.example.qrcodeapp.mainActivity.pages.accountPage.ui.theme.QRCodeAppTheme
 import kotlinx.coroutines.launch
 
-class CreatedCodesActivity : ComponentActivity() {
+class ScannedCodesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dao = QrDatabase.getInstance(application).createdCodesDao
-        val viewModelFactory = CreatedCodesViewModelFactory(dao)
-        val ccvm = ViewModelProvider(this, viewModelFactory).get(CreatedCodesViewModel::class.java)
+        val dao = QrDatabase.getInstance(application).scannedCodesDao
+        val viewModelFactory = ScannedCodesViewModelFactory(dao)
+        val scvm = ViewModelProvider(this, viewModelFactory).get(ScannedCodesViewModel::class.java)
 
         setContent {
             QRCodeAppTheme {
@@ -69,7 +65,7 @@ class CreatedCodesActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CreatedCodesPage(ccvm = ccvm)
+                    ScannedCodesPage(scvm = scvm)
                 }
             }
         }
@@ -78,27 +74,29 @@ class CreatedCodesActivity : ComponentActivity() {
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
+fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
     val headerWeight = 1f
     val contentWeight = 12f
 
     val context = LocalContext.current
 
-    val createdCodes = remember {
-        mutableStateOf<List<CreatedCodes>?>(null)
+    val scanendCodes = remember {
+        mutableStateOf<List<ScannedCodes>?>(null)
     }
 
     val scope = rememberCoroutineScope()
 
     scope.launch {
-        createdCodes.value =
-            CurrentDataHandler.getActiveUser()?.userLogin?.let { ccvm?.getAllCodes(it) }
+        if (scvm != null) {
+            scanendCodes.value = CurrentDataHandler.getActiveUser()
+                ?.let { scvm.getAllCodes(it.userLogin) }
+        }
     }
 
     suspend fun deleteCode(id:Int){
-        ccvm?.deleteCode(id)
-        createdCodes.value =
-            CurrentDataHandler.getActiveUser()?.userLogin?.let { ccvm?.getAllCodes(it) }
+        scvm?.deleteCode(id)
+        scanendCodes.value =
+            CurrentDataHandler.getActiveUser()?.userLogin?.let { scvm?.getAllCodes(it) }
     }
 
     Box(
@@ -146,7 +144,7 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Созданные QR-коды",
+                        text = "Отсканированные QR-коды",
                         fontSize = 20.sp
                     )
                 }
@@ -157,7 +155,7 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                 .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(5.dp)) {
 
-                if (createdCodes.value?.isEmpty() == true) {
+                if (scanendCodes.value?.isEmpty() == true) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -166,7 +164,7 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
 
                         Text(
                             textAlign = TextAlign.Center,
-                            text = "Вы ещё не создали ни одного QR-кода :(",
+                            text = "Вы ещё не отсканировали ни одного QR-кода :(",
                             fontSize = 25.sp
                         )
 
@@ -181,15 +179,16 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                                 contentColor = Color.Black
                             ),
                             onClick = {
-                                val intent = Intent(context, CreateQRMainActivity::class.java)
+                                val intent = Intent(context, MainActivity::class.java)
+                                CurrentDataHandler.setMainActivityPage(Page.SCANNER)
                                 ContextCompat.startActivity(context, intent, null)
                             }) {
                             Text(text = "Перейти к созданию")
                         }
                     }
                 }else{
-                    createdCodes.value?.forEach { item ->
-                        CodeBox(qrCode = item.code, content = item.content, qrId = item.id,
+                    scanendCodes.value?.forEach { item ->
+                        CodeBox(content = item.content, qrId = item.id,
                             deleteAction = {
                                 scope.launch {
                                     deleteCode(item.id)
@@ -202,19 +201,15 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
     }
 }
 
+
 @Composable
-fun CodeBox(qrCode:ByteArray,
-            content:String,
+fun CodeBox(content:String,
             qrId:Int,
             deleteAction:()->Unit){
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-
-    fun qrCode(): ImageBitmap {
-        return  BitmapFactory.decodeByteArray(qrCode, 0, qrCode.size).asImageBitmap()
-    }
 
     Button(modifier = Modifier
         .shadow(3.dp)
@@ -225,7 +220,7 @@ fun CodeBox(qrCode:ByteArray,
             contentColor = Color.Black
         ),
         onClick = {
-            val intent = Intent(context, CreatedQrCodeInspectActivity::class.java)
+            val intent = Intent(context, ScannedQrCodeInspectActivity::class.java)
             intent.putExtra("qrCodeId", qrId)
             ContextCompat.startActivity(context, intent, null)
         }) {
@@ -235,23 +230,20 @@ fun CodeBox(qrCode:ByteArray,
                 .fillMaxWidth()
                 .height(50.dp)) {
 
-            Image(modifier = Modifier.weight(1f),
-                bitmap = qrCode(), contentDescription = null)
-
             Text(modifier = Modifier.weight(5f), text = content)
 
             Button(modifier = Modifier
                 .weight(2f),
-            shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                contentColor = Color.Black
-            ),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Black
+                ),
                 onClick = {
-                scope.launch {
-                    deleteAction()
-                }
-            }) {
+                    scope.launch {
+                        deleteAction()
+                    }
+                }) {
                 Image(modifier = Modifier
                     .width(15.dp)
                     .height(15.dp),
@@ -263,11 +255,10 @@ fun CodeBox(qrCode:ByteArray,
 
 }
 
-
-@Preview(showSystemUi = true, showBackground = true)
+@Preview(showBackground = true)
 @Composable
-fun CreatedCodesPagePreview() {
+fun ScannedCodesPreview() {
     QRCodeAppTheme {
-        CreatedCodesPage(null)
+        ScannedCodesPage(null)
     }
 }

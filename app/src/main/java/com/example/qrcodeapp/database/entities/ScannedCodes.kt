@@ -5,13 +5,12 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "scanned_codes")
 data class ScannedCodes(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
-
-    var code: ByteArray = ByteArray(0),
 
     var content:String = "",
 
-    var owner: String = ""
+    var owner: String = "",
+    var date: String = ""
 )
 

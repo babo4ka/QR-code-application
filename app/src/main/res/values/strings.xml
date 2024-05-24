@@ -15,4 +15,6 @@
     <string name="title_activity_created_codes">CreatedCodesActivity</string>
     <string name="title_activity_qr_code_inspect">QrCodeInspectActivity</string>
     <string name="title_activity_scanner">ScannerActivity</string>
+    <string name="title_activity_scanned_codes">ScannedCodesActivity</string>
+    <string name="title_activity_scanned_qr_code_inspect">ScannedQrCodeInspectActivity</string>
 </resources>

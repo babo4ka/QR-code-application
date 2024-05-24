@@ -160,7 +160,10 @@ fun AccountPage(modifier: Modifier, uvm: UserViewModel?) {
                             containerColor = Color.Transparent,
                             contentColor = Color.Black
                         ),
-                        onClick = { /*TODO*/ }) {
+                        onClick = {
+                            val intent = Intent(context, ScannedCodesActivity::class.java)
+                            ContextCompat.startActivity(context, intent, null)
+                        }) {
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(

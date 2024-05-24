@@ -3,6 +3,7 @@ package com.example.qrcodeapp.createQRActivity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,9 +56,13 @@ import com.example.qrcodeapp.database.viewModels.CreatedCodesViewModel
 import com.example.qrcodeapp.database.viewModels.factories.CreatedCodesViewModelFactory
 import com.example.qrcodeapp.mainActivity.MainActivity
 import com.example.qrcodeapp.mainActivity.Page
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
 import qrcode.QRCode
 import qrcode.QRCodeBuilder
 import qrcode.color.Colors
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -125,15 +131,15 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
     val defaultLogoFile = assets.open("app_logo.png")
     val defaultLogoByteArray = defaultLogoFile.readBytes()
 
-    val qrBuilder = remember {
-        mutableStateOf(
-            QRCode.ofCircles()
-                .withSize(15)
-                .withBackgroundColor(Colors.BLACK)
-                .withColor(qrColor.value)
-                .withLogo(defaultLogoByteArray, 128, 128, true)
-        )
-    }
+//    val qrBuilder = remember {
+//        mutableStateOf(
+//            QRCode.ofCircles()
+//                .withSize(15)
+//                .withBackgroundColor(Colors.BLACK)
+//                .withColor(qrColor.value)
+//                .withLogo(defaultLogoByteArray, 128, 128, true)
+//        )
+//    }
 
     val activeCustomizeOption = remember {
         mutableStateOf("Цвет")
@@ -145,20 +151,75 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
     val footerWeight = 5f
 
 
-    fun qrToBytes(): ByteArray {
+    fun qrCode(): ImageBitmap {
+//        val bytes = qrToBytes()
+//        return bytes.size.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
+        val textEntered = CurrentDataHandler.getTextEntered()
         val text = when(CurrentDataHandler.getQrTypeChoosed()){
-            QrType.TEXT -> CurrentDataHandler.getTextEntered()
-            QrType.LINK -> "https://${CurrentDataHandler.getTextEntered()}"
-            QrType.TG -> "https://t.me/${CurrentDataHandler.getTextEntered()}"
-            else -> ({}).toString()
+            QrType.TEXT -> if(textEntered == "") "zero" else textEntered
+            QrType.LINK -> "https://${if(textEntered == "") "zero" else textEntered}"
+            QrType.TG -> "https://t.me/${if(textEntered == "") "zero" else textEntered}"
+            else -> if(textEntered == "") "zero" else textEntered
         }
 
-        return qrBuilder.value.build("text").render().getBytes()
+        val s = 1000
+        val bitMatrix: BitMatrix =
+            QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, s, s)
+
+        val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.RGB_565)
+        for (x in 0 until s) {
+            for (y in 0 until s) {
+                bmp.setPixel(x, y, if (bitMatrix[x, y]) qrBackColor.value else qrColor.value)
+            }
+        }
+
+        if(CurrentDataHandler.getActiveUser() == null){
+            val logoBmp = BitmapFactory.decodeByteArray(defaultLogoByteArray, 0, defaultLogoByteArray.size)
+            val xPos = (s - logoBmp.width) / 2
+            val yPos = (s - logoBmp.height) / 2
+
+            val mergedBitmap = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(mergedBitmap)
+            canvas.drawBitmap(bmp, 0f, 0f, null)
+            canvas.drawBitmap(logoBmp, xPos.toFloat(), yPos.toFloat(), null)
+
+            return mergedBitmap.asImageBitmap()
+        }else{
+            if (qrLogo.value != ""){
+                val logoFile = assets.open(qrLogo.value)
+                val logoByteArray = logoFile.readBytes()
+
+                val logoBmp = BitmapFactory.decodeByteArray(logoByteArray, 0, logoByteArray.size)
+                val xPos = (s - logoBmp.width) / 2
+                val yPos = (s - logoBmp.height) / 2
+
+                val mergedBitmap = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(mergedBitmap)
+                canvas.drawBitmap(bmp, 0f, 0f, null)
+                canvas.drawBitmap(logoBmp, xPos.toFloat(), yPos.toFloat(), null)
+
+                return mergedBitmap.asImageBitmap()
+            }else{
+                return bmp.asImageBitmap()
+            }
+        }
     }
 
-    fun qrCode(): ImageBitmap {
-        val bytes = qrToBytes()
-        return bytes.size.let { BitmapFactory.decodeByteArray(bytes, 0, it).asImageBitmap() }
+
+
+    fun qrToBytes(): ByteArray {
+//        val text = when(CurrentDataHandler.getQrTypeChoosed()){
+//            QrType.TEXT -> CurrentDataHandler.getTextEntered()
+//            QrType.LINK -> "https://${CurrentDataHandler.getTextEntered()}"
+//            QrType.TG -> "https://t.me/${CurrentDataHandler.getTextEntered()}"
+//            else -> ({}).toString()
+//        }
+//
+//        return qrBuilder.value.build(text).render().getBytes()
+
+        val stream = ByteArrayOutputStream()
+        qrCode().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 90, stream)
+        return stream.toByteArray()
     }
 
     fun saveQrToFiles(){
@@ -178,35 +239,35 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         }
     }
 
-    fun rebuildQr() {
-        var builder: QRCodeBuilder? = null
-
-        when (qrShape.value) {
-            "Круги" -> builder = QRCode.ofCircles()
-            "Квадраты" -> builder = QRCode.ofSquares()
-            "Закругленные квадраты" -> builder = QRCode.ofRoundedSquares()
-        }
-
-        if (qrLogo.value != "") {
-            val logoFile = assets.open(qrLogo.value)
-            val byteArray = logoFile.readBytes()
-
-
-            if (builder != null) {
-                builder = builder.withLogo(byteArray, 128, 128, true)
-            }
-        }else{
-            if (builder != null) {
-                builder = builder.withLogo(defaultLogoByteArray, 128, 128, true)
-            }
-        }
-
-        if (builder != null) {
-            qrBuilder.value = builder
-                .withBackgroundColor(qrBackColor.value)
-                .withColor(qrColor.value)
-        }
-    }
+//    fun rebuildQr() {
+//        var builder: QRCodeBuilder? = null
+//
+//        when (qrShape.value) {
+//            "Круги" -> builder = QRCode.ofCircles()
+//            "Квадраты" -> builder = QRCode.ofSquares()
+//            "Закругленные квадраты" -> builder = QRCode.ofRoundedSquares()
+//        }
+//
+//        if (qrLogo.value != "") {
+//            val logoFile = assets.open(qrLogo.value)
+//            val byteArray = logoFile.readBytes()
+//
+//
+//            if (builder != null) {
+//                builder = builder.withLogo(byteArray, 128, 128, true)
+//            }
+//        }else{
+//            if (builder != null) {
+//                builder = builder.withLogo(defaultLogoByteArray, 128, 128, true)
+//            }
+//        }
+//
+//        if (builder != null) {
+//            qrBuilder.value = builder
+//                .withBackgroundColor(qrBackColor.value)
+//                .withColor(qrColor.value)
+//        }
+//    }
 
     fun getContentUri(): Uri?{
         val bytes = qrToBytes()
@@ -414,7 +475,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                                 ColorChoosePage(type="content",
                                     action = {
                                         qrColor.value = it
-                                        rebuildQr()
+                                        //rebuildQr()
                                     })
                             }
 
@@ -422,7 +483,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                                 ColorChoosePage(type="back",
                                     action = {
                                         qrBackColor.value = it
-                                        rebuildQr()
+                                        //rebuildQr()
                                     }
                                 )
                             }
@@ -430,14 +491,14 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                             "Форма" -> {
                                 ShapeChoosePage {
                                     qrShape.value = it
-                                    rebuildQr()
+                                    //rebuildQr()
                                 }
                             }
 
                             "Лого" -> {
                                 LogoChoosePage {
                                     qrLogo.value = it
-                                    rebuildQr()
+                                    //rebuildQr()
                                 }
                             }
                         }

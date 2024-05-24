@@ -89,7 +89,32 @@ fun CreateQRActivityPage() {
         mutableStateOf(CurrentDataHandler.getTextEntered())
     }
 
+    val qrTypes = listOf("текст", "ссылка", "телеграм", "смс", "wifi")
+    val painterResources = listOf(
+        painterResource(id = R.drawable.text),
+        painterResource(id = R.drawable.link),
+        painterResource(id = R.drawable.telegram),
+        painterResource(id = R.drawable.sms),
+        painterResource(id = R.drawable.wifi)
+    )
+    val qrTypesEnum = listOf(QrType.TEXT, QrType.LINK, QrType.TG, QrType.SMS, QrType.WIFI)
 
+
+    val smsDest = remember{
+        mutableStateOf("")
+    }
+
+    val smsContent = remember{
+        mutableStateOf("")
+    }
+
+    val wifiName = remember{
+        mutableStateOf("")
+    }
+
+    val wifiPassWord = remember{
+        mutableStateOf("")
+    }
 
     Box(
         modifier = Modifier
@@ -210,9 +235,82 @@ fun CreateQRActivityPage() {
                         }
                     }
 
-                    QrType.IMG -> TODO()
-                    QrType.FILE -> TODO()
-                    null -> TODO()
+                    QrType.SMS -> {
+                        Column ( modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)){
+                            TextField(
+                                value = smsDest.value,
+                                onValueChange = {
+                                    smsDest.value = it
+                                    textToEncode.value = "SMSTO:${smsDest.value}:${smsContent.value}"
+                                },
+                                label = { Text(text = "Кому") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text(text = "Введите адресата") }
+                            )
+
+                            TextField(
+                                value = smsContent.value,
+                                onValueChange = {
+                                    smsContent.value = it
+                                    textToEncode.value = "SMSTO:${smsDest.value}:${smsContent.value}"
+                                },
+                                label = { Text(text = "Сообщение") },
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text(text = "Введите Сообщение") }
+                            )
+                        }
+                    }
+                    QrType.WIFI -> {
+                        Column ( modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)){
+                            TextField(
+                                value = wifiName.value,
+                                onValueChange = {
+                                    wifiName.value = it
+                                    textToEncode.value = "WIFI:S:${wifiName.value};T:WPA2;P:${wifiPassWord.value};;"
+                                },
+                                label = { Text(text = "Название сети") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text(text = "Введите название сети") }
+                            )
+
+                            TextField(
+                                value = wifiPassWord.value,
+                                onValueChange = {
+                                    wifiPassWord.value = it
+                                    textToEncode.value = "WIFI:S:${wifiName.value};T:WPA2;P:${wifiPassWord.value};;"
+                                },
+                                label = { Text(text = "Пароль") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                placeholder = { Text(text = "Введите пароль") }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -233,61 +331,27 @@ fun CreateQRActivityPage() {
                             .verticalScroll(state = rememberScrollState())
                     ) {
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            activeButton.value?.let {
-                                QRTypeButton(
-                                    text = "Текст",
-                                    painter = painterResource(id = R.drawable.text),
-                                    action = {
-                                        CurrentDataHandler.setQrTypeChoosed(QrType.TEXT)
-                                        activeButton.value = QrType.TEXT
-                                    },
-                                    active = it,
-                                    type = QrType.TEXT
-                                )
+                        qrTypes.forEachIndexed{id, item ->
+                            if(id < 3){
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                ) {
+                                    activeButton.value?.let {
+                                        QRTypeButton(
+                                            text = item,
+                                            painter = painterResources[id],
+                                            action = {
+                                                CurrentDataHandler.setQrTypeChoosed(qrTypesEnum[id])
+                                                activeButton.value = qrTypesEnum[id]
+                                            },
+                                            active = it,
+                                            type = qrTypesEnum[id]
+                                        )
+                                    }
+                                }
                             }
                         }
-
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            activeButton.value?.let {
-                                QRTypeButton(
-                                    text = "Ссылка",
-                                    painter = painterResource(id = R.drawable.link),
-                                    action = {
-                                        CurrentDataHandler.setQrTypeChoosed(QrType.LINK)
-                                        activeButton.value = QrType.LINK
-                                    },
-                                    active = it,
-                                    type = QrType.LINK
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            activeButton.value?.let {
-                                QRTypeButton(
-                                    text = "Телеграм",
-                                    painter = painterResource(id = R.drawable.telegram),
-                                    action = {
-                                        CurrentDataHandler.setQrTypeChoosed(QrType.TG)
-                                        activeButton.value = QrType.TG
-                                    },
-                                    active = it,
-                                    type = QrType.TG
-                                )
-                            }
-                        }
-
                     }
 
                     Row(
@@ -297,39 +361,25 @@ fun CreateQRActivityPage() {
                             .height(75.dp)
                     ) {
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            activeButton.value?.let {
-                                QRTypeButton(
-                                    text = "Картинка",
-                                    painter = painterResource(id = R.drawable.img),
-                                    action = {
-                                        CurrentDataHandler.setQrTypeChoosed(QrType.IMG)
-                                        activeButton.value = QrType.IMG
-                                    },
-                                    active = it,
-                                    type = QrType.IMG
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            activeButton.value?.let {
-                                QRTypeButton(
-                                    text = "Файл",
-                                    painter = painterResource(id = R.drawable.file),
-                                    action = {
-                                        CurrentDataHandler.setQrTypeChoosed(QrType.FILE)
-                                        activeButton.value = QrType.FILE
-                                    },
-                                    active = it,
-                                    type = QrType.FILE
-                                )
+                        qrTypes.forEachIndexed{id, item ->
+                            if(id > 2){
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                ) {
+                                    activeButton.value?.let {
+                                        QRTypeButton(
+                                            text = item,
+                                            painter = painterResources[id],
+                                            action = {
+                                                CurrentDataHandler.setQrTypeChoosed(qrTypesEnum[id])
+                                                activeButton.value = qrTypesEnum[id]
+                                            },
+                                            active = it,
+                                            type = qrTypesEnum[id]
+                                        )
+                                    }
+                                }
                             }
                         }
 

@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
-class QrCodeInspectActivity : ComponentActivity() {
+class CreatedQrCodeInspectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -70,7 +70,7 @@ class QrCodeInspectActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QrCodeInspect(qrCodeId = qrCodeId, ccvm = ccvm) {
+                    CreatedQrCodeInspect(qrCodeId = qrCodeId, ccvm = ccvm) {
                         saveQrCodeToFiles(it)
                     }
                 }
@@ -94,7 +94,7 @@ class QrCodeInspectActivity : ComponentActivity() {
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun QrCodeInspect(
+fun CreatedQrCodeInspect(
     qrCodeId: Int,
     ccvm: CreatedCodesViewModel?,
     saveQrToFilesAction: (Bitmap?) -> Unit
@@ -266,7 +266,7 @@ fun QrCodeInspect(
 @Composable
 fun QrCodeInspectPreview() {
     QRCodeAppTheme {
-        QrCodeInspect(-1, null) {
+        CreatedQrCodeInspect(-1, null) {
 
         }
     }

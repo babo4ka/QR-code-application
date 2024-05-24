@@ -9,13 +9,13 @@ import kotlinx.coroutines.launch
 
 class ScannedCodesViewModel(val dao: ScannedCodesDao): ViewModel() {
 
-    fun addCode(userLogin: String, qrCode:ByteArray, content:String){
+    fun addCode(userLogin: String, content:String, date:String){
         viewModelScope.launch {
             val code = ScannedCodes()
 
             code.owner = userLogin
-            code.code = qrCode
             code.content = content
+            code.date = date
             dao.insert(code)
         }
     }
@@ -28,7 +28,7 @@ class ScannedCodesViewModel(val dao: ScannedCodesDao): ViewModel() {
         return res.await()
     }
 
-    suspend fun getAlLCodes(userLogin: String): List<ScannedCodes> {
+    suspend fun getAllCodes(userLogin: String): List<ScannedCodes> {
         val res = viewModelScope.async {
             dao.getAllCodes(userLogin)
         }

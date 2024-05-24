@@ -37,7 +37,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.databases.QrDatabase
+import com.example.qrcodeapp.database.viewModels.ScannedCodesViewModel
 import com.example.qrcodeapp.database.viewModels.UserViewModel
+import com.example.qrcodeapp.database.viewModels.factories.ScannedCodesViewModelFactory
 import com.example.qrcodeapp.database.viewModels.factories.UserViewModelFactory
 import com.example.qrcodeapp.mainActivity.pages.accountPage.AccountPage
 import com.example.qrcodeapp.mainActivity.pages.mainPage.MainPage
@@ -47,17 +49,11 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
 
-    private val scanLauncher = registerForActivityResult(ScanContract()){
-            result ->
-        if(result.contents == null){
 
-        }else{
-            Toast.makeText(this, "data: ${result.contents}", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +62,27 @@ class MainActivity : ComponentActivity() {
         val viewModelFactory = UserViewModelFactory(dao)
         val uvm = ViewModelProvider(this, viewModelFactory).get(UserViewModel::class.java)
 
+        val scDao = QrDatabase.getInstance(application).scannedCodesDao
+        val scViewModelFactory = ScannedCodesViewModelFactory(scDao)
+        val scvm = ViewModelProvider(this, scViewModelFactory).get(ScannedCodesViewModel::class.java)
+
+        val scanLauncher = registerForActivityResult(ScanContract()){
+                result ->
+            if(result.contents == null){
+
+            }else{
+                val date = Date().time.toString()
+                CurrentDataHandler.getActiveUser()
+                    ?.let { scvm.addCode(it.userLogin, result.contents, date) }
+
+                Toast.makeText(this, "data: ${result.contents}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        fun scan(){
+            scanLauncher.launch(ScanOptions()
+                .setDesiredBarcodeFormats(ScanOptions.QR_CODE))
+        }
 
         setContent {
             QRCodeAppTheme {
@@ -82,9 +99,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun scan(){
-        scanLauncher.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES))
-    }
+
 }
 
 
@@ -126,9 +141,11 @@ fun MainActivityPage(uvm:UserViewModel?, scanAction:()->Unit) {
                 }
 
                 Page.SCANNER -> {
-                    ScannerPage {
+                    ScannerPage(modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f), action = {
                         scanAction()
-                    }
+                    })
                 }
                 Page.ACCOUNT -> {
                     AccountPage(
