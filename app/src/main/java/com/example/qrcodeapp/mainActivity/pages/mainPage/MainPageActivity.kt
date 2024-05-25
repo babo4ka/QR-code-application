@@ -23,10 +23,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.qrcodeapp.PremiumReminder
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.CreateQRMainActivity
@@ -54,6 +56,12 @@ fun MainPage(modifier: Modifier) {
         if(CurrentDataHandler.getActiveUser() == null){
             Reminder()
         }
+
+        if(CurrentDataHandler.getActiveUser() != null
+            && !CurrentDataHandler.getActiveUser()?.premium!!){
+            PremiumReminder()
+        }
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -89,7 +97,8 @@ fun MainPage(modifier: Modifier) {
 
                     Text(
                         text = "Создать QR-код",
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
 

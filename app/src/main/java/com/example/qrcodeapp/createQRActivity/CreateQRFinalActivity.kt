@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -35,8 +37,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -49,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
+import com.example.qrcodeapp.PremiumReminder
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.pages.colorsAndBackgroundPage.ColorChoosePage
@@ -64,6 +70,7 @@ import com.example.qrcodeapp.mainActivity.Page
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.launch
 import qrcode.color.Colors
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -135,6 +142,7 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
 
     val context = LocalContext.current
     val assets = context.resources.assets
+    val scope = rememberCoroutineScope()
 
     val qrColor = remember {
         mutableStateOf(Colors.WHITE)
@@ -151,6 +159,15 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
     val qrLogo = remember {
         mutableStateOf("")
     }
+
+    val saveBtnGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to Color.hsv(119f, .76f, .65f),
+            0.8f to Color.hsv(190f, .79f, .94f)
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(500f, 500f)
+    )
 
     val defaultLogoFile = assets.open("app_logo.png")
     val defaultLogoByteArray = defaultLogoFile.readBytes()
@@ -260,11 +277,21 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         val bytes = qrToBytes()
         val user = CurrentDataHandler.getActiveUser()
 
-        if (user != null) {
-            ccvm?.addCode(user.userLogin, bytes, CurrentDataHandler.getTextEntered())
+        val textEntered = CurrentDataHandler.getTextEntered()
+        val text = when(CurrentDataHandler.getQrTypeChoosed()){
+            QrType.TEXT -> if(textEntered == "") "zero" else textEntered
+            QrType.LINK -> "https://${if(textEntered == "") "zero" else textEntered}"
+            QrType.TG -> "https://t.me/${if(textEntered == "") "zero" else textEntered}"
+            else -> if(textEntered == "") "zero" else textEntered
+        }
 
-            Toast.makeText(context, "QR-код сохранён в истории", Toast.LENGTH_SHORT)
-                .show()
+        if (user != null) {
+            scope.launch {
+                ccvm?.addCode(user, bytes, text)
+                Toast.makeText(context, "QR-код сохранён в истории", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
         }
     }
 
@@ -332,6 +359,11 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
         ) {
             if(CurrentDataHandler.getActiveUser() == null){
                 Reminder()
+            }
+
+            if(CurrentDataHandler.getActiveUser() != null
+                && !CurrentDataHandler.getActiveUser()?.premium!!){
+                PremiumReminder()
             }
 
 
@@ -410,9 +442,14 @@ fun QRCodeCreator(ccvm: CreatedCodesViewModel?, saveQrToFilesAction:(Bitmap?)->U
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.Black,
-                        containerColor = Color.Green
+                        containerColor = Color.Transparent
                     ),
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier
+                        .weight(2f)
+                        .background(
+                            brush = saveBtnGradient,
+                            shape = RoundedCornerShape(20)
+                        )
                 ) {
                     Text(text = "Сохранить", fontSize = 13.sp)
                 }

@@ -9,24 +9,28 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(val dao: UserDao): ViewModel() {
 
-    fun addUser(newUserLogin: String, newUserPassword: String, newUserName:String){
-        viewModelScope.launch {
+    suspend fun addUser(newUserLogin: String, newUserPassword: String, newUserName:String){
+       return viewModelScope.async {
             val user = User()
 
             user.userLogin = newUserLogin
             user.password = newUserPassword
             user.name = newUserName
             dao.insert(user)
-        }
+        }.await()
     }
 
 
     suspend fun getUser(userLogin: String): User {
-        val res = viewModelScope.async {
+        return viewModelScope.async {
             dao.get(userLogin)
-        }
+        }.await()
+    }
 
-        return res.await()
-
+    suspend fun setPremium(user: User){
+        return viewModelScope.async {
+            user.premium = true
+            dao.update(user)
+        }.await()
     }
 }

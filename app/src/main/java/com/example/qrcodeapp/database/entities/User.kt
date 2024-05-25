@@ -11,6 +11,8 @@ data class User(
 
     var password: String = "",
 
-    var name: String = ""
+    var name: String = "",
+
+    var premium: Boolean = false
 
 )

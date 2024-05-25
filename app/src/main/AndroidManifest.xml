@@ -22,6 +22,16 @@
         android:theme="@style/Theme.QRCodeApp"
         tools:targetApi="31">
         <activity
+            android:name=".PremiumReminderActivity"
+            android:exported="false"
+            android:label="@string/title_activity_premium_reminder"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
+            android:name=".DialogModal"
+            android:exported="false"
+            android:label="@string/title_activity_dialog_modal"
+            android:theme="@style/Theme.QRCodeApp" />
+        <activity
             android:name=".widget.creator.QrWidget"
             android:exported="false"
             android:label="@string/title_activity_qr_creator_widget"
@@ -135,6 +145,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_meta" />

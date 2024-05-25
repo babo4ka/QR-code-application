@@ -2,45 +2,46 @@ package com.example.qrcodeapp.database.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.qrcodeapp.database.CurrentDataHandler
 import com.example.qrcodeapp.database.daos.CreatedCodesDao
 import com.example.qrcodeapp.database.entities.CreatedCodes
+import com.example.qrcodeapp.database.entities.User
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class CreatedCodesViewModel(val dao: CreatedCodesDao): ViewModel() {
+class CreatedCodesViewModel(val dao: CreatedCodesDao) : ViewModel() {
 
-    fun addCode(userLogin: String, qrCode:ByteArray, content:String){
-        viewModelScope.launch {
-            val code = CreatedCodes()
+    suspend fun addCode(user: User, qrCode: ByteArray, content: String) {
+        return viewModelScope.async {
+            if (user.premium ||
+                dao.getAllCodes(user.userLogin).size < CurrentDataHandler.getNonPremiumMaxCodes()
+            ) {
 
-            code.owner = userLogin
-            code.code = qrCode
-            code.content = content
-            dao.insert(code)
-        }
+                val code = CreatedCodes()
+
+                code.owner = user.userLogin
+                code.code = qrCode
+                code.content = content
+                dao.insert(code)
+            }
+        }.await()
     }
 
-    suspend fun getCode(id:Int):CreatedCodes{
-        val res = viewModelScope.async {
+    suspend fun getCode(id: Int): CreatedCodes {
+        return viewModelScope.async {
             dao.getCode(id)
-        }
-
-        return res.await()
+        }.await()
     }
 
     suspend fun getAllCodes(userLogin: String): List<CreatedCodes> {
-        val res = viewModelScope.async {
+        return viewModelScope.async {
             dao.getAllCodes(userLogin)
-        }
-
-        return res.await()
+        }.await()
     }
 
-    suspend fun deleteCode(id:Int){
-        val res = viewModelScope.async {
+    suspend fun deleteCode(id: Int) {
+        return viewModelScope.async {
             dao.delete(id)
-        }
-
-        res.await()
+        }.await()
     }
 }

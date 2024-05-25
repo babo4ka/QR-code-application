@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -53,12 +54,16 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.Date
 
 class MainActivity : ComponentActivity() {
 
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -70,20 +75,26 @@ class MainActivity : ComponentActivity() {
         val scViewModelFactory = ScannedCodesViewModelFactory(scDao)
         val scvm = ViewModelProvider(this, scViewModelFactory).get(ScannedCodesViewModel::class.java)
 
+
+        val context = this
+
         val scanLauncher = registerForActivityResult(ScanContract()){
                 result ->
             if(result.contents == null){
 
             }else{
-                val date = Date().time.toString()
-                CurrentDataHandler.getActiveUser()
-                    ?.let { scvm.addCode(it.userLogin, result.contents, date) }
+                GlobalScope.launch {
+                    val date = Date().time.toString()
+                    CurrentDataHandler.getActiveUser()
+                        ?.let { scvm.addCode(it, result.contents, date) }
 
-                val intent = Intent(this, ScannedQrCodeInspectActivity::class.java)
-                intent.putExtra("fromDb", false)
-                intent.putExtra("content", result.contents)
-                intent.putExtra("date", date)
-                ContextCompat.startActivity(this, intent, null)
+                    val intent = Intent(context, ScannedQrCodeInspectActivity::class.java)
+                    intent.putExtra("fromDb", false)
+                    intent.putExtra("content", result.contents)
+                    intent.putExtra("date", date)
+                    ContextCompat.startActivity(context, intent, null)
+                }
+
             }
         }
 

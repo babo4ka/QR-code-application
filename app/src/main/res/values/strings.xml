@@ -18,4 +18,6 @@
     <string name="title_activity_scanned_codes">ScannedCodesActivity</string>
     <string name="title_activity_scanned_qr_code_inspect">ScannedQrCodeInspectActivity</string>
     <string name="title_activity_qr_creator_widget">QrCreatorWidget</string>
+    <string name="title_activity_dialog_modal">DialogModal</string>
+    <string name="title_activity_premium_reminder">PremiumReminderActivity</string>
 </resources>

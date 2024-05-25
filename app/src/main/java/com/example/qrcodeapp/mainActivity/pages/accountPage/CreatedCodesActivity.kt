@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -137,7 +140,7 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                         contentDescription = null
                     )
                 }
-                //Spacer(modifier = Modifier.weight(1f))
+
 
                 Box(
                     modifier = Modifier
@@ -146,11 +149,14 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Созданные QR-коды",
+                        text = "Созданные QR-коды " +
+                                if(CurrentDataHandler.getActiveUser()?.premium != true) "${createdCodes.value?.size}/${CurrentDataHandler.getNonPremiumMaxCodes()}" else "",
                         fontSize = 20.sp
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             Column(modifier = Modifier
                 .weight(contentWeight)
@@ -188,14 +194,23 @@ fun CreatedCodesPage(ccvm: CreatedCodesViewModel?) {
                         }
                     }
                 }else{
-                    createdCodes.value?.forEach { item ->
-                        CodeBox(qrCode = item.code, content = item.content, qrId = item.id,
-                            deleteAction = {
-                                scope.launch {
-                                    deleteCode(item.id)
-                                }
-                            })
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        createdCodes.value?.forEach { item ->
+                            CodeBox(qrCode = item.code, content = item.content, qrId = item.id,
+                                deleteAction = {
+                                    scope.launch {
+                                        deleteCode(item.id)
+                                    }
+                                })
+                        }
                     }
+
                 }
             }
         }
@@ -238,7 +253,8 @@ fun CodeBox(qrCode:ByteArray,
             Image(modifier = Modifier.weight(1f),
                 bitmap = qrCode(), contentDescription = null)
 
-            Text(modifier = Modifier.weight(5f), text = content)
+            Text(modifier = Modifier.weight(5f), text = content,
+                color = Color.Black)
 
             Button(modifier = Modifier
                 .weight(2f),

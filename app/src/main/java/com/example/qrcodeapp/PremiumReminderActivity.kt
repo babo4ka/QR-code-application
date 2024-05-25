@@ -5,11 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,27 +24,26 @@ import com.example.qrcodeapp.mainActivity.MainActivity
 import com.example.qrcodeapp.mainActivity.Page
 import com.example.qrcodeapp.ui.theme.QRCodeAppTheme
 
-
 @Composable
-fun Reminder() {
+fun PremiumReminder() {
 
     val context = LocalContext.current
     val openModal = remember{
         mutableStateOf(false)
     }
 
-    val dialogText:String = "Войдите в аккаунт или зарегистрируйтесь если у Вас его нет, " +
-            "чтобы получить доступ к дополнительным функциям, таким как: " +
-            "сохранение QR-кодов в базе данных и больший выбор кастомизации"
+    val dialogText = "Купить премиум-доступ, чтобы получить больше возможностей для редактирования, " +
+            "а также неограниченное хранилище для Ваших QR-кодов"
 
     when(openModal.value){
         true ->
-            ModalDialog(title = "Вход или регистрация",
+            ModalDialog(title = "Купить премиум",
                 text = dialogText,
-                confirmText = "Вход/Регистрация",
+                confirmText = "Купить премиум",
                 onDismissRequest = {
                     openModal.value = false
-                }
+                },
+
             ) {
                 openModal.value = false
                 CurrentDataHandler.setMainActivityPage(Page.ACCOUNT)
@@ -77,7 +74,7 @@ fun Reminder() {
         }
 
 
-        Text(text = "Вы не авторизированы!", fontSize = 10.sp)
+        Text(text = "Премиум-доступ", fontSize = 10.sp)
         Button(
             onClick = {
                 CurrentDataHandler.setMainActivityPage(Page.ACCOUNT)
@@ -89,7 +86,7 @@ fun Reminder() {
                 contentColor = Color.Blue
             )
         ) {
-            Text(text = "Вход/Регистрация", fontSize = 10.sp)
+            Text(text = "Купить премиум", fontSize = 10.sp)
         }
     }
 }
@@ -98,8 +95,8 @@ fun Reminder() {
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun ReminderPreview() {
+fun PremiumReminderPreview() {
     QRCodeAppTheme {
-        Reminder()
+        PremiumReminder()
     }
 }

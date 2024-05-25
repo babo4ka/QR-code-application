@@ -16,6 +16,8 @@ class CurrentDataHandler {
 
         private var mainActivityPage: Page = Page.MAIN
 
+        private val nonPremiumMaxCodes: Int = 10
+
         fun setActiveUser(user:User?){
             activeUser = user
         }
@@ -47,5 +49,10 @@ class CurrentDataHandler {
         fun getMainActivityPage():Page{
             return mainActivityPage
         }
+
+        fun getNonPremiumMaxCodes():Int{
+            return nonPremiumMaxCodes
+        }
+
     }
 }

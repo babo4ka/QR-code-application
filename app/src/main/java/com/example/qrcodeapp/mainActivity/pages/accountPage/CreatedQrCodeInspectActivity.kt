@@ -1,15 +1,20 @@
 package com.example.qrcodeapp.mainActivity.pages.accountPage
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -51,6 +59,7 @@ import com.example.qrcodeapp.mainActivity.pages.accountPage.ui.theme.QRCodeAppTh
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.io.OutputStream
 
 class CreatedQrCodeInspectActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,16 +88,33 @@ class CreatedQrCodeInspectActivity : ComponentActivity() {
 
     }
 
-    fun saveQrCodeToFiles(content: Bitmap?) {
+    fun saveQrCodeToFiles(content:Bitmap?){
+        var fos: OutputStream? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            this.contentResolver?.also { resolver ->
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, "qr.png")
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                }
+                val imageUri: Uri? =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                fos = imageUri?.let { resolver.openOutputStream(it) }
+            }
+        }else{
+            val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
+            dir.mkdirs()
 
-        val dir = File(Environment.getExternalStorageDirectory().toString() + "/qrCodes")
-        dir.mkdirs()
-        val file = File(dir, "qr.jpg")
-        val fos = FileOutputStream(file)
-        content?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            val file = File(dir, "qr.jpg")
+            fos = FileOutputStream(file)
+        }
 
-        fos.flush()
-        fos.close()
+        fos?.let { content?.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+
+        fos?.flush()
+        fos?.close()
+
+        Toast.makeText(this, "QR-код сохранён на устройстве!", Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -116,6 +142,25 @@ fun CreatedQrCodeInspect(
     scope.launch {
         qrCodeObj.value = ccvm?.getCode(qrCodeId)
     }
+
+    val saveBtnGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to Color.hsv(119f, .76f, .65f),
+            0.8f to Color.hsv(190f, .79f, .94f)
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(500f, 500f)
+    )
+
+    val shareBtnGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to Color.hsv(348f, .98f, .78f),
+            0.8f to Color.hsv(319f, .76f, .98f)
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(500f, 500f)
+    )
+
 
     fun qrCode(): ImageBitmap? {
         println(qrCodeObj.value)
@@ -219,9 +264,14 @@ fun CreatedQrCodeInspect(
                     .height(50.dp)) {
                 Button(colors = ButtonDefaults.buttonColors(
                     contentColor = Color.Black,
-                    containerColor = Color.Green
+                    containerColor = Color.Transparent
                 ),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            brush = saveBtnGradient,
+                            shape = RoundedCornerShape(20)
+                        ),
                     onClick = {
                         saveQrToFiles()
                     }) {
@@ -234,8 +284,13 @@ fun CreatedQrCodeInspect(
 
                 Button(colors = ButtonDefaults.buttonColors(
                     contentColor = Color.Black,
-                    containerColor = Color.Green
-                ),modifier = Modifier.weight(1f),
+                    containerColor = Color.Transparent
+                ),modifier = Modifier
+                    .weight(1f)
+                    .background(
+                        brush = shareBtnGradient,
+                        shape = RoundedCornerShape(20)
+                    ),
 
                     onClick = {
                         val contentUri = getContentUri()
@@ -251,10 +306,20 @@ fun CreatedQrCodeInspect(
                         )
                     }) {
 
-                    Text(
-                        text = "Поделиться",
-                        fontSize = 20.sp
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()){
+                        Text(
+                            text = "Поделиться",
+                            fontSize = 20.sp
+                        )
+
+                        Image(modifier = Modifier.fillMaxSize(),
+                            painter = painterResource(id = R.drawable.share),
+                            contentDescription = null)
+                    }
+
                 }
             }
         }

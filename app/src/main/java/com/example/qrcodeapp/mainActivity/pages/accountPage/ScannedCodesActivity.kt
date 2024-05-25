@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -93,7 +96,7 @@ fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
         }
     }
 
-    suspend fun deleteCode(id:Int){
+    suspend fun deleteCode(id: Int) {
         scvm?.deleteCode(id)
         scanendCodes.value =
             CurrentDataHandler.getActiveUser()?.userLogin?.let { scvm?.getAllCodes(it) }
@@ -135,7 +138,6 @@ fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
                         contentDescription = null
                     )
                 }
-                //Spacer(modifier = Modifier.weight(1f))
 
                 Box(
                     modifier = Modifier
@@ -144,16 +146,22 @@ fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Отсканированные QR-коды",
+                        text = "Отсканированные QR-коды " +
+                                if (CurrentDataHandler.getActiveUser()?.premium != true) "${scanendCodes.value?.size}/${CurrentDataHandler.getNonPremiumMaxCodes()}" else "",
                         fontSize = 20.sp
                     )
                 }
             }
 
-            Column(modifier = Modifier
-                .weight(contentWeight)
-                .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Column(
+                modifier = Modifier
+                    .weight(contentWeight)
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
 
                 if (scanendCodes.value?.isEmpty() == true) {
                     Column(
@@ -183,18 +191,27 @@ fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
                                 CurrentDataHandler.setMainActivityPage(Page.SCANNER)
                                 ContextCompat.startActivity(context, intent, null)
                             }) {
-                            Text(text = "Перейти к созданию")
+                            Text(text = "Перейти к сканированию")
                         }
                     }
-                }else{
-                    scanendCodes.value?.forEach { item ->
-                        CodeBox(content = item.content, qrId = item.id,
-                            deleteAction = {
-                                scope.launch {
-                                    deleteCode(item.id)
-                                }
-                            })
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        scanendCodes.value?.forEach { item ->
+                            CodeBox(content = item.content, qrId = item.id,
+                                deleteAction = {
+                                    scope.launch {
+                                        deleteCode(item.id)
+                                    }
+                                })
+                        }
                     }
+
                 }
             }
         }
@@ -203,9 +220,11 @@ fun ScannedCodesPage(scvm: ScannedCodesViewModel?) {
 
 
 @Composable
-fun CodeBox(content:String,
-            qrId:Int,
-            deleteAction:()->Unit){
+fun CodeBox(
+    content: String,
+    qrId: Int,
+    deleteAction: () -> Unit
+) {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -225,11 +244,13 @@ fun CodeBox(content:String,
             intent.putExtra("fromDb", true)
             ContextCompat.startActivity(context, intent, null)
         }) {
-        Row(horizontalArrangement = Arrangement.spacedBy(15.dp),
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(15.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)) {
+                .height(50.dp)
+        ) {
 
             Text(modifier = Modifier.weight(5f), text = content)
 
@@ -245,11 +266,13 @@ fun CodeBox(content:String,
                         deleteAction()
                     }
                 }) {
-                Image(modifier = Modifier
-                    .width(15.dp)
-                    .height(15.dp),
+                Image(
+                    modifier = Modifier
+                        .width(15.dp)
+                        .height(15.dp),
                     painter = painterResource(id = R.drawable.close),
-                    contentDescription = null)
+                    contentDescription = null
+                )
             }
         }
     }

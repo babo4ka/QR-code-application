@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
@@ -44,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.qrcodeapp.PremiumReminder
 import com.example.qrcodeapp.R
 import com.example.qrcodeapp.Reminder
 import com.example.qrcodeapp.createQRActivity.ui.theme.QRCodeAppTheme
@@ -89,6 +93,15 @@ fun CreateQRActivityPage() {
         mutableStateOf(CurrentDataHandler.getTextEntered())
     }
 
+    val createBtnGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to Color.hsv(119f, .76f, .65f),
+            0.8f to Color.hsv(190f, .79f, .94f)
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(500f, 500f)
+    )
+
     val qrTypes = listOf("текст", "ссылка", "телеграм", "смс", "wifi")
     val painterResources = listOf(
         painterResource(id = R.drawable.text),
@@ -127,6 +140,11 @@ fun CreateQRActivityPage() {
         ) {
             if(CurrentDataHandler.getActiveUser() == null){
                 Reminder()
+            }
+
+            if(CurrentDataHandler.getActiveUser() != null
+                && !CurrentDataHandler.getActiveUser()?.premium!!){
+                PremiumReminder()
             }
 
             Row(
@@ -186,9 +204,12 @@ fun CreateQRActivityPage() {
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.Black,
-                        containerColor = Color.Green
+                        containerColor = Color.Transparent
                     ),
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier.weight(2f).background(
+                        brush = createBtnGradient,
+                        shape = RoundedCornerShape(20)
+                    )
                 ) {
                     Text(text = "Создать")
                 }
