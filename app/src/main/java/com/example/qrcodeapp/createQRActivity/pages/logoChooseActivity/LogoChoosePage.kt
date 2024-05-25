@@ -43,9 +43,29 @@ fun LogoChoosePage(action: (String) -> Unit) {
         mutableStateOf("")
     }
 
+    val premiumLogos = listOf("android.png", "minecraft.png", "pinterest.png", "tiktok.png", "xbox.png")
+
     val firstRow = listOf("telegram.png", "minecraft.png", "apple.png")
     val secondRow = listOf("burger.png", "music.png", "android.png", "student.png")
-    val thirdRow = listOf("pinterest.png", "steam.png")
+    val thirdRow = listOf("pinterest.png", "steam.png", "xbox.png", "yandex.png")
+    val fourthRow = listOf("firefox.png", "tiktok.png")
+
+    fun checkForPremuim(logoId:Int, row:Int):Boolean{
+        val user = CurrentDataHandler.getActiveUser()
+
+        return if(user == null || !user.premium){
+            when(row){
+                1 -> firstRow[logoId] !in premiumLogos
+                2 -> secondRow[logoId] !in premiumLogos
+                3 -> thirdRow[logoId] !in premiumLogos
+                4 -> fourthRow[logoId] !in premiumLogos
+                else -> false
+            }
+        }else{
+            true
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -78,7 +98,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         )
                     }
 
-                    firstRow.forEach{ item ->
+                    firstRow.forEachIndexed{ id, item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -90,6 +110,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                                     action(item)
                                     activeLogo.value = item
                                 },
+                                enabled = checkForPremuim(id, 1),
                                 logoName = item,
                                 active = activeLogo.value,
                                 assets = assets
@@ -105,7 +126,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
-                    secondRow.forEach { item ->
+                    secondRow.forEachIndexed { id, item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -119,7 +140,8 @@ fun LogoChoosePage(action: (String) -> Unit) {
                                 },
                                 logoName = item,
                                 active = activeLogo.value,
-                                assets = assets
+                                assets = assets,
+                                enabled = checkForPremuim(id, 2)
                             )
                         }
                     }
@@ -132,7 +154,7 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
-                    thirdRow.forEach { item ->
+                    thirdRow.forEachIndexed { id, item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -146,7 +168,37 @@ fun LogoChoosePage(action: (String) -> Unit) {
                                 },
                                 logoName = item,
                                 active = activeLogo.value,
-                                assets = assets
+                                assets = assets,
+                                enabled = checkForPremuim(id, 3)
+                            )
+                        }
+                    }
+
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    fourthRow.forEachIndexed { id, item ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            LogoButton(
+                                action = {
+                                    action(item)
+                                    activeLogo.value = item
+                                },
+                                logoName = item,
+                                active = activeLogo.value,
+                                assets = assets,
+                                enabled = checkForPremuim(id, 4)
                             )
                         }
                     }
@@ -159,7 +211,11 @@ fun LogoChoosePage(action: (String) -> Unit) {
                         .fillMaxHeight()
                         .fillMaxWidth()
                         .weight(1f))
+
                 }
+
+
+
             }else{
                 Text(modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
@@ -178,6 +234,7 @@ fun LogoButton(
     action: () -> Unit,
     logoName: String,
     active: String,
+    enabled:Boolean,
     assets: AssetManager
 ) {
 
@@ -194,6 +251,7 @@ fun LogoButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = if (active == logoName) Color.Black else Color.White
         ),
+        enabled = enabled,
         onClick = { action() }) {
 
         Image(
@@ -206,8 +264,8 @@ fun LogoButton(
 
 @Composable
 fun NoLogoButton(
-    action: () -> Unit,
-    active: String
+    active: String,
+    action: () -> Unit
 ) {
 
 
